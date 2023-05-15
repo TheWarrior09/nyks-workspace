@@ -55,7 +55,7 @@ export async function creditBalance(req: Request, res: Response) {
       return;
     }
 
-    const txResponse = await credit(faucetAddress, recipientAddress, 1000);
+    const txResponse = await credit(faucetAddress, recipientAddress, 3000);
     addressCounter.set(recipientAddress, new Date());
 
     res.send({
