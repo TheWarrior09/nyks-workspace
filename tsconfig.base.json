@@ -15,6 +15,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@nyks-workspace/hooks": ["libs/hooks/src/index.ts"],
       "@nyks-workspace/shared-ui": ["libs/shared-ui/src/index.ts"],
       "@nyks/proto-ts": ["libs/proto-ts/src/index.ts"]
     }
