@@ -1,5 +1,8 @@
 {
   "name": "@nyks/proto-ts",
   "version": "0.0.1",
-  "type": "commonjs"
+  "type": "commonjs",
+  "scripts": {
+    "codegen-script": "ts-node script.ts"
+  }
 }

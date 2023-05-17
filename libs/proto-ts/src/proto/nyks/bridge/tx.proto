@@ -1,0 +1,135 @@
+syntax = "proto3";
+
+package twilightproject.nyks.bridge;
+
+import "nyks/volt/reserve.proto";
+
+// this line is used by starport scaffolding # proto/tx/import
+
+option go_package = "github.com/twilight-project/nyks/x/bridge/types";
+
+// Msg defines the Msg service.
+service Msg {
+  rpc ConfirmBtcDeposit         (MsgConfirmBtcDeposit        ) returns (MsgConfirmBtcDepositResponse        );
+  rpc RegisterBtcDepositAddress (MsgRegisterBtcDepositAddress) returns (MsgRegisterBtcDepositAddressResponse);
+  rpc RegisterReserveAddress    (MsgRegisterReserveAddress   ) returns (MsgRegisterReserveAddressResponse   );
+  rpc RegisterJudge             (MsgRegisterJudge            ) returns (MsgRegisterJudgeResponse            );
+  
+  // this line is used by starport scaffolding # proto/tx/rpc
+  rpc WithdrawBtcRequest    (MsgWithdrawBtcRequest   ) returns (MsgWithdrawBtcRequestResponse   );
+  rpc SweepProposal      (MsgSweepProposal     ) returns (MsgSweepProposalResponse     );
+  rpc WithdrawTxSigned   (MsgWithdrawTxSigned  ) returns (MsgWithdrawTxSignedResponse  );
+  rpc WithdrawTxFinal    (MsgWithdrawTxFinal   ) returns (MsgWithdrawTxFinalResponse   );
+  rpc ConfirmBtcWithdraw (MsgConfirmBtcWithdraw) returns (MsgConfirmBtcWithdrawResponse);
+  rpc SignRefund         (MsgSignRefund        ) returns (MsgSignRefundResponse        );
+  rpc BroadcastRefund    (MsgBroadcastRefund   ) returns (MsgBroadcastRefundResponse   );
+}
+message MsgConfirmBtcDeposit {
+  string depositAddress         = 1;
+  uint64 depositAmount          = 2;
+  uint64 height                 = 3;
+  string hash                   = 4;
+  string twilightDepositAddress = 5;
+  string reserveAddress         = 6;
+  string oracleAddress          = 7;
+}
+
+message MsgConfirmBtcDepositResponse {
+  string twilightDepositAddress = 1;
+}
+
+message MsgRegisterBtcDepositAddress {
+  string depositAddress         = 1;
+  string twilightDepositAddress = 2;
+}
+
+message MsgRegisterBtcDepositAddressResponse {}
+
+message MsgRegisterReserveAddress {
+  string reserveScript  = 1;
+  string reserveAddress = 2;
+  string judgeAddress   = 3;
+}
+
+message MsgRegisterReserveAddressResponse {
+  string reserveAddress = 1;
+}
+
+message MsgRegisterJudge {
+  string creator          = 1;
+  string judgeAddress     = 2;
+  string validatorAddress = 3;
+}
+
+message MsgRegisterJudgeResponse {}
+
+// this line is used by starport scaffolding # proto/tx/message
+message MsgWithdrawBtcRequest {
+  string withdrawAddress = 1;
+  string reserveAddress  = 2;
+  uint64 withdrawAmount  = 3;
+  string twilightAddress = 4;
+}
+
+message MsgWithdrawBtcRequestResponse {}
+
+message MsgSweepProposal {
+           string                                                     creator                          =  1;
+           uint64                                                     reserveId                        =  2;
+           string                                                     reserveAddress                   =  3;
+           string                                                     judgeAddress                     =  4;
+           uint64                                                     btcRelayCapacityValue            =  5;
+           uint64                                                     totalValue                       =  6;
+           uint64                                                     privatePoolValue                 =  7;
+           uint64                                                     publicValue                      =  8;
+           uint64                                                     feePool                          =  9;
+  repeated twilightproject.nyks.volt.IndividualTwilightReserveAccount individualTwilightReserveAccount = 10;
+           string                                                     btcRefundTx                      = 11;
+           string                                                     btcSweepTx                       = 12;
+}
+
+message MsgSweepProposalResponse {}
+
+message MsgWithdrawTxSigned {
+  string creator          = 1;
+  string validatorAddress = 2;
+  string btcTxSigned      = 3;
+}
+
+message MsgWithdrawTxSignedResponse {}
+
+message MsgWithdrawTxFinal {
+  string creator      = 1;
+  string judgeAddress = 2;
+  string btcTx        = 3;
+}
+
+message MsgWithdrawTxFinalResponse {}
+
+message MsgConfirmBtcWithdraw {
+  string creator          = 1;
+  string validatorAddress = 2;
+  string txHash           = 3;
+}
+
+message MsgConfirmBtcWithdrawResponse {}
+
+message MsgSignRefund {
+  string creator         = 1;
+  string reserveAddress  = 2;
+  string signerAddress   = 3;
+  string refundSignature = 4;
+  string sweepSignature  = 5;
+}
+
+message MsgSignRefundResponse {}
+
+message MsgBroadcastRefund {
+  string creator        = 1;
+  string judgeAddress   = 2;
+  string signedRefundTx = 3;
+  string signedSweepTx  = 4;
+}
+
+message MsgBroadcastRefundResponse {}
+
