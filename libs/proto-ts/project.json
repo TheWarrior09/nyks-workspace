@@ -1,0 +1,40 @@
+{
+  "name": "proto-ts",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/proto-ts/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nx/rollup:rollup",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/proto-ts",
+        "main": "libs/proto-ts/src/index.ts",
+        "tsConfig": "libs/proto-ts/tsconfig.lib.json",
+        "assets": [],
+        "project": "libs/proto-ts/package.json",
+        "compiler": "swc"
+      }
+    },
+    "publish": {
+      "command": "node tools/scripts/publish.mjs proto-ts {args.ver} {args.tag}",
+      "dependsOn": ["build"]
+    },
+    "lint": {
+      "executor": "@nx/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/proto-ts/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nx/vite:test",
+      "outputs": ["coverage/libs/proto-ts"],
+      "options": {
+        "passWithNoTests": true,
+        "reportsDirectory": "../../coverage/libs/proto-ts"
+      }
+    }
+  },
+  "tags": []
+}

@@ -15,7 +15,8 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@nyks-workspace/shared-ui": ["libs/shared-ui/src/index.ts"]
+      "@nyks-workspace/shared-ui": ["libs/shared-ui/src/index.ts"],
+      "@nyks/proto-ts": ["libs/proto-ts/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
