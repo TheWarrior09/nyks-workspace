@@ -6,6 +6,7 @@
   "private": true,
   "devDependencies": {
     "@emotion/babel-plugin": "11.10.6",
+    "@keplr-wallet/types": "^0.11.63",
     "@nx/cypress": "16.1.4",
     "@nx/esbuild": "16.1.4",
     "@nx/eslint-plugin": "16.1.4",
