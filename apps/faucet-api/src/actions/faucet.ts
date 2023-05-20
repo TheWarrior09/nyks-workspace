@@ -6,11 +6,9 @@ import {
   assertIsDeliverTxSuccess,
 } from '@cosmjs/stargate';
 import { fromBech32 } from '@cosmjs/encoding';
+import { env } from '../env';
 
-const TENDERMINT_RPC = process.env.TENDERMINT_RPC || 'http://localhost:26657';
-const TESTNET_COIN_DENOM = process.env.TESTNET_COIN_DENOM || 'nyks';
-const ADDRESS_PREFIX = process.env.ADDRESS_PREFIX || 'twilight';
-const MNEMONIC = process.env.MNEMONIC;
+const { TENDERMINT_RPC, TESTNET_COIN_DENOM, ADDRESS_PREFIX, MNEMONIC } = env;
 
 async function faucetWalletDetails() {
   try {

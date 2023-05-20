@@ -4,11 +4,10 @@ import helmet from 'helmet';
 import { invalidPathHandler } from './middleware';
 import { creditRouter, statusRouter } from './routes';
 import { sequelize } from './database';
+import { env } from './env';
 
-const host = process.env.HOST ?? 'localhost';
-const port = process.env.FAUCET_API_PORT
-  ? Number(process.env.FAUCET_API_PORT)
-  : 9000;
+const host = env.FAUCET_API_HOST;
+const port = env.FAUCET_API_PORT;
 
 const app = express();
 app.use(bodyParser.json());

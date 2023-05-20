@@ -1,12 +1,7 @@
 import { Sequelize } from 'sequelize';
+import { env } from '../env';
 
-const {
-  DB_HOST = 'localhost',
-  DB_PORT = 5432,
-  DB_NAME = 'nyks-faucet',
-  DB_USER = 'postgres',
-  DB_PASSWORD = 'postgres',
-} = process.env;
+const { DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD } = env;
 
 export const sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASSWORD, {
   host: DB_HOST,
