@@ -1,14 +1,17 @@
 import type { Request, Response } from 'express';
 import { z } from 'zod';
-import { credit, faucetWalletDetails, isValidAddress } from '../actions';
+import { isValidAddress } from '../actions';
+import {
+  getLatestPendingRequest,
+  saveIndividualUserRequest,
+  getLatestRequest,
+} from '../models';
 
 const addressRegex = /^[a-z]+1[a-z\d]{38}$/;
 
 const creditSchema = z.object({
   address: z.string().regex(addressRegex),
 });
-
-const addressCounter = new Map<string, Date>();
 
 export async function creditBalance(req: Request, res: Response) {
   try {
@@ -28,39 +31,49 @@ export async function creditBalance(req: Request, res: Response) {
       return;
     }
 
-    const addressStatus = addressCounter.get(recipientAddress);
-    if (addressStatus) {
-      const now = new Date();
-      const diff = now.getTime() - addressStatus.getTime();
-      const waitTimeInMs = 1000 * 60 * 30;
-      if (diff < waitTimeInMs) {
-        const differenceInMillisecond =
-          addressStatus.getTime() - now.getTime() + waitTimeInMs;
-        res.status(429).send({
-          message: `Too many request for the same address. Blocked to prevent draining. Please wait ${Math.floor(
-            differenceInMillisecond / 1000 / 60
-          )} minutes ${Math.floor(
-            (differenceInMillisecond / 1000) % 60
-          )} seconds and try it again!`,
+    const userPreviousRequest = await getLatestPendingRequest(recipientAddress);
+    if (userPreviousRequest) {
+      const dbResponse = await userPreviousRequest.toJSON();
+      const transactionStatus = dbResponse.status;
+      if (transactionStatus === 'pending') {
+        res.status(422).send({
+          message: `Previous request is still pending. Please wait till it is completed.`,
         });
         return;
       }
     }
 
-    const { faucetBalance, faucetAddress } = await faucetWalletDetails();
-    if (Number(faucetBalance.amount) < 1000) {
-      res.status(422).send({
-        message: `Insufficient balance. Available tokens are: ${faucetBalance.amount}`,
-      });
-      return;
+    const userLatestRequest = await getLatestRequest(recipientAddress);
+    if (userLatestRequest) {
+      const dbResponse = await userLatestRequest.toJSON();
+      const transactionStatus = dbResponse.status;
+      const currentTime = new Date().getTime();
+      const requestFulfilledAt = new Date(dbResponse.updatedAt).getTime();
+      const waitTimeInMs = 1000 * 60 * 30;
+      const timeDifferenceBtwTwoRequests = currentTime - requestFulfilledAt;
+      if (
+        transactionStatus === 'fulfilled' &&
+        timeDifferenceBtwTwoRequests < waitTimeInMs
+      ) {
+        const differenceInMillisecond =
+          requestFulfilledAt - currentTime + waitTimeInMs;
+        const waitTimeInMinutes = Math.floor(
+          differenceInMillisecond / 1000 / 60
+        );
+        const waitTimeInSeconds = Math.floor(
+          (differenceInMillisecond / 1000) % 60
+        );
+        res.status(429).send({
+          message: `Too many request for the same address. Blocked to prevent draining. Please wait ${waitTimeInMinutes} minutes ${waitTimeInSeconds} seconds and try it again!`,
+        });
+        return;
+      }
     }
 
-    const txResponse = await credit(faucetAddress, recipientAddress, 3000);
-    addressCounter.set(recipientAddress, new Date());
+    await saveIndividualUserRequest(recipientAddress);
 
     res.send({
-      message: 'Transaction Done',
-      transactionHash: txResponse.transactionHash,
+      message: `Added ${recipientAddress} to the credit list. Please wait for the transaction to be completed.`,
     });
   } catch (error) {
     console.log(error);
