@@ -25,7 +25,8 @@ async function faucetWalletDetails() {
     );
     return { wallet, faucetAddress: address, faucetBalance };
   } catch (error) {
-    throw new Error(error);
+    console.info(error);
+    throw error;
   }
 }
 
@@ -35,7 +36,8 @@ function createSigningClient(wallet: DirectSecp256k1HdWallet) {
       gasPrice: GasPrice.fromString('0.0001nyks'),
     });
   } catch (error) {
-    throw new Error(error);
+    console.info(error);
+    throw error;
   }
 }
 
@@ -78,7 +80,8 @@ async function transferSingle(
     assertIsDeliverTxSuccess(txResponse);
     return txResponse;
   } catch (error) {
-    throw new Error(error);
+    console.info(error);
+    throw error;
   }
 }
 
