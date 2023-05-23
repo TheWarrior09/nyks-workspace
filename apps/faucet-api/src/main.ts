@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import { invalidPathHandler } from './middleware';
 import { creditRouter, statusRouter } from './routes';
 import { sequelize } from './database';
+import { Faucet } from './models';
 import { env } from './env';
 
 const host = env.FAUCET_API_HOST;
@@ -17,6 +18,7 @@ app.use(helmet());
 (async function () {
   try {
     await sequelize.authenticate();
+    await Faucet.sync();
     console.info('Database connection has been established successfully.', {
       service: 'Faucet-api App',
     });
