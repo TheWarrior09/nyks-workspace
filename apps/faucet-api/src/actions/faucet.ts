@@ -48,7 +48,11 @@ function isValidAddress(address: string) {
   }
 }
 
-async function credit(sender: string, recipient: string, amount: number) {
+async function transferSingle(
+  sender: string,
+  recipient: string,
+  amount: number
+) {
   try {
     const { wallet } = await faucetWalletDetails();
     const client = await createSigningClient(wallet);
@@ -78,4 +82,46 @@ async function credit(sender: string, recipient: string, amount: number) {
   }
 }
 
-export { credit, faucetWalletDetails, isValidAddress };
+async function transferMultiple(
+  senderAddress: string,
+  recipientAddresses: string[],
+  amount: number
+) {
+  try {
+    const { wallet } = await faucetWalletDetails();
+    const client = await createSigningClient(wallet);
+
+    const message = recipientAddresses.map((recipientAddress) => ({
+      typeUrl: '/cosmos.bank.v1beta1.MsgSend',
+      value: {
+        fromAddress: senderAddress,
+        toAddress: recipientAddress,
+        amount: [
+          {
+            denom: TESTNET_COIN_DENOM,
+            amount: amount.toString(),
+          },
+        ],
+      },
+    }));
+
+    const txResponse = await client.signAndBroadcast(
+      senderAddress,
+      message,
+      'auto'
+    );
+
+    assertIsDeliverTxSuccess(txResponse);
+    return txResponse;
+  } catch (error) {
+    console.info(error);
+    throw error;
+  }
+}
+
+export {
+  faucetWalletDetails,
+  isValidAddress,
+  transferSingle,
+  transferMultiple,
+};
