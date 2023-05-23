@@ -6,6 +6,7 @@ import {
   assertIsDeliverTxSuccess,
 } from '@cosmjs/stargate';
 import { fromBech32 } from '@cosmjs/encoding';
+import { updateIndividualUserTransactionDetails } from '../models';
 import { env } from '../env';
 
 const { TENDERMINT_RPC, TESTNET_COIN_DENOM, ADDRESS_PREFIX, MNEMONIC } = env;
@@ -62,6 +63,12 @@ async function credit(sender: string, recipient: string, amount: number) {
       recipient,
       [amountWithDenom],
       'auto'
+    );
+
+    await updateIndividualUserTransactionDetails(
+      recipient,
+      txResponse.transactionHash,
+      'fulfilled'
     );
 
     assertIsDeliverTxSuccess(txResponse);
