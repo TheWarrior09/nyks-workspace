@@ -1,5 +1,4 @@
 import express from 'express';
-import bodyParser from 'body-parser';
 import helmet from 'helmet';
 import { invalidPathHandler } from './middleware';
 import { creditRouter, statusRouter } from './routes';
@@ -11,8 +10,8 @@ const host = env.FAUCET_API_HOST;
 const port = env.FAUCET_API_PORT;
 
 const app = express();
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(helmet());
 
 (async function () {
