@@ -4,6 +4,7 @@ import { invalidPathHandler } from './middleware';
 import { creditRouter, statusRouter } from './routes';
 import { sequelize } from './database';
 import { Faucet } from './models';
+import { tokenTransferCronJob } from './actions/';
 import { env } from './env';
 
 const host = env.FAUCET_API_HOST;
@@ -36,6 +37,8 @@ app.use('/credit', creditRouter);
 app.use('/status', statusRouter);
 
 app.use(invalidPathHandler);
+
+(() => tokenTransferCronJob.start())();
 
 app.listen(port, host, () => {
   console.log(`[ ready ] http://${host}:${port}`);
