@@ -1,8 +1,8 @@
 import { DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
 import {
+  GasPrice,
   SigningStargateClient,
   StargateClient,
-  StdFee,
   assertIsDeliverTxSuccess,
 } from '@cosmjs/stargate';
 import { fromBech32 } from '@cosmjs/encoding';
@@ -30,7 +30,9 @@ async function faucetWalletDetails() {
 
 function createSigningClient(wallet: DirectSecp256k1HdWallet) {
   try {
-    return SigningStargateClient.connectWithSigner(TENDERMINT_RPC, wallet);
+    return SigningStargateClient.connectWithSigner(TENDERMINT_RPC, wallet, {
+      gasPrice: GasPrice.fromString('0.0001nyks'),
+    });
   } catch (error) {
     throw new Error(error);
   }
@@ -54,17 +56,12 @@ async function credit(sender: string, recipient: string, amount: number) {
       denom: TESTNET_COIN_DENOM,
       amount: amount.toString(),
     };
-    const feeAmount = '1000';
-    const fee: StdFee = {
-      amount: [{ denom: TESTNET_COIN_DENOM, amount: feeAmount }],
-      gas: '100000',
-    };
 
     const txResponse = await client.sendTokens(
       sender,
       recipient,
       [amountWithDenom],
-      fee
+      'auto'
     );
 
     assertIsDeliverTxSuccess(txResponse);
