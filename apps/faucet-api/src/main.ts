@@ -1,7 +1,8 @@
 import express from 'express';
 import helmet from 'helmet';
-import { invalidPathHandler } from './middleware';
 import { creditRouter, statusRouter } from './routes';
+import cors from 'cors';
+import { errorMiddleware, invalidPathHandler } from './middleware';
 import { sequelize } from './database';
 import { Faucet } from './models';
 import { tokenTransferCronJob } from './actions/';
@@ -11,6 +12,7 @@ const host = env.FAUCET_API_HOST;
 const port = env.FAUCET_API_PORT;
 
 const app = express();
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(helmet());
@@ -36,6 +38,7 @@ app.get('/', (req, res) => {
 app.use('/credit', creditRouter);
 app.use('/status', statusRouter);
 
+app.use(errorMiddleware);
 app.use(invalidPathHandler);
 
 (() => tokenTransferCronJob.start())();
