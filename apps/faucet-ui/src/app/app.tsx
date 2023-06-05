@@ -1,6 +1,7 @@
 import { Box } from '@mui/material';
 import { NavbarTop } from '@nyks-workspace/shared-ui';
 import { EnvironmentContextProvider } from './context';
+import { FaucetUI } from './faucet-page';
 
 interface MenuItem {
   label: string;
@@ -22,6 +23,8 @@ export function App() {
       <EnvironmentContextProvider>
         <NavbarTop menu={menuItems} />
       </EnvironmentContextProvider>
+
+      <FaucetUI />
     </Box>
   );
 }
