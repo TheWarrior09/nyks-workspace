@@ -1,8 +1,8 @@
 import express from 'express';
 import helmet from 'helmet';
-import { creditRouter, statusRouter } from './routes';
 import cors from 'cors';
 import { errorMiddleware, invalidPathHandler } from './middleware';
+import { creditRouter, statusRouter, requestRouter } from './routes';
 import { sequelize } from './database';
 import { Faucet } from './models';
 import { tokenTransferCronJob } from './actions/';
@@ -36,6 +36,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/credit', creditRouter);
+app.use('/request', requestRouter);
 app.use('/status', statusRouter);
 
 app.use(errorMiddleware);
