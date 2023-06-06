@@ -40,7 +40,7 @@ async function queryFunctionWithAxios(
 }
 
 const usePostRequestFaucet = (faucetEndpoint: string) => {
-  const CREDIT_ENDPOINT = `${faucetEndpoint}/credit`;
+  const CREDIT_ENDPOINT = `${faucetEndpoint}credit`;
   return useMutation({
     mutationFn: ({ address }: { address: string }) =>
       postRequestFaucet(CREDIT_ENDPOINT, address),

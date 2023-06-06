@@ -1,7 +1,8 @@
 import { Box } from '@mui/material';
-import { NavbarTop } from '@nyks-workspace/shared-ui';
+import { StyledNavbar } from '@nyks-workspace/shared-ui';
 import { EnvironmentContextProvider } from './context';
 import { FaucetUI } from './faucet-page';
+import { CHAIN_ID, COSMOS_REST, TENDERMINT_RPC } from '../env';
 
 interface MenuItem {
   label: string;
@@ -21,7 +22,12 @@ export function App() {
   return (
     <Box>
       <EnvironmentContextProvider>
-        <NavbarTop menu={menuItems} />
+        <StyledNavbar
+          menu={menuItems}
+          chainId={CHAIN_ID}
+          cosmosRest={COSMOS_REST}
+          tendermintRpc={TENDERMINT_RPC}
+        />
       </EnvironmentContextProvider>
 
       <FaucetUI />
