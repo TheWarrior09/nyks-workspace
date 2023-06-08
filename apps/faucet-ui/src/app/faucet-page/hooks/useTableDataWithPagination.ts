@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useGetRequestList } from './useFaucetApi';
+import { FAUCET_ENDPOINT } from '../../../env';
 
 export function useTableDataWithPagination({
   initialRowsPerPage = 5,
@@ -8,7 +9,7 @@ export function useTableDataWithPagination({
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(initialRowsPerPage);
   const requestList = useGetRequestList({
-    faucetEndpoint: 'http://localhost:9000',
+    faucetEndpoint: FAUCET_ENDPOINT,
     path,
     params: {
       page: page + 1,
