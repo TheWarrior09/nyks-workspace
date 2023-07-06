@@ -40,3 +40,6 @@ Thumbs.db
 
 # environment variables
 .env.local
+
+# Next.js
+.next
