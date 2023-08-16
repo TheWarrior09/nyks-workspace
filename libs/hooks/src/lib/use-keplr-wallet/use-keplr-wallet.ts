@@ -24,6 +24,16 @@ const getAccounts = (chainId: string) => {
   return offlineSigner.getAccounts();
 };
 
+export const signArbitraryMessage = async (
+  chainID: string,
+  signerAddress: string,
+  msg: string
+) => {
+  const keplr = getKeplr();
+  const signature = await keplr.signArbitrary(chainID, signerAddress, msg);
+  return signature;
+};
+
 const getAllBalances = async (chainId: string, tendermintRpc: string) => {
   const offlineSigner = getOfflineSigner(chainId);
   const account: AccountData = (await offlineSigner.getAccounts())[0];
