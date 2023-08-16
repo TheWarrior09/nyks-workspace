@@ -1,15 +1,14 @@
 import { AminoMsg } from "@cosmjs/amino";
 import { Long } from "../../helpers";
-import { MsgConfirmBtcDeposit, MsgRegisterBtcDepositAddress, MsgRegisterReserveAddress, MsgRegisterJudge, MsgWithdrawBtcRequest, MsgSweepProposal, MsgWithdrawTxSigned, MsgWithdrawTxFinal, MsgConfirmBtcWithdraw, MsgSignRefund, MsgBroadcastRefund } from "./tx";
+import { MsgConfirmBtcDeposit, MsgRegisterBtcDepositAddress, MsgRegisterReserveAddress, MsgRegisterJudge, MsgWithdrawBtcRequest, MsgSweepProposal, MsgWithdrawTxSigned, MsgWithdrawTxFinal, MsgSignRefund, MsgBroadcastTxSweep, MsgSignSweep, MsgProposeRefundHash, MsgConfirmBtcWithdraw } from "./tx";
 export interface MsgConfirmBtcDepositAminoType extends AminoMsg {
   type: "/twilightproject.nyks.bridge.MsgConfirmBtcDeposit";
   value: {
-    depositAddress: string;
+    reserveAddress: string;
     depositAmount: string;
     height: string;
     hash: string;
     twilightDepositAddress: string;
-    reserveAddress: string;
     oracleAddress: string;
   };
 }
@@ -48,7 +47,6 @@ export interface MsgWithdrawBtcRequestAminoType extends AminoMsg {
 export interface MsgSweepProposalAminoType extends AminoMsg {
   type: "/twilightproject.nyks.bridge.MsgSweepProposal";
   value: {
-    creator: string;
     reserveId: string;
     reserveAddress: string;
     judgeAddress: string;
@@ -57,10 +55,6 @@ export interface MsgSweepProposalAminoType extends AminoMsg {
     privatePoolValue: string;
     publicValue: string;
     feePool: string;
-    individualTwilightReserveAccount: {
-      TwilightAddress: string;
-      BtcValue: string;
-    }[];
     btcRefundTx: string;
     btcSweepTx: string;
   };
@@ -81,71 +75,82 @@ export interface MsgWithdrawTxFinalAminoType extends AminoMsg {
     btcTx: string;
   };
 }
-export interface MsgConfirmBtcWithdrawAminoType extends AminoMsg {
-  type: "/twilightproject.nyks.bridge.MsgConfirmBtcWithdraw";
-  value: {
-    creator: string;
-    validatorAddress: string;
-    txHash: string;
-  };
-}
 export interface MsgSignRefundAminoType extends AminoMsg {
   type: "/twilightproject.nyks.bridge.MsgSignRefund";
   value: {
-    creator: string;
     reserveAddress: string;
     signerAddress: string;
     refundSignature: string;
-    sweepSignature: string;
+    btcOracleAddress: string;
   };
 }
-export interface MsgBroadcastRefundAminoType extends AminoMsg {
-  type: "/twilightproject.nyks.bridge.MsgBroadcastRefund";
+export interface MsgBroadcastTxSweepAminoType extends AminoMsg {
+  type: "/twilightproject.nyks.bridge.MsgBroadcastTxSweep";
   value: {
-    creator: string;
-    judgeAddress: string;
     signedRefundTx: string;
     signedSweepTx: string;
+    judgeAddress: string;
+  };
+}
+export interface MsgSignSweepAminoType extends AminoMsg {
+  type: "/twilightproject.nyks.bridge.MsgSignSweep";
+  value: {
+    reserveAddress: string;
+    signerAddress: string;
+    sweepSignature: string;
+    btcOracleAddress: string;
+  };
+}
+export interface MsgProposeRefundHashAminoType extends AminoMsg {
+  type: "/twilightproject.nyks.bridge.MsgProposeRefundHash";
+  value: {
+    refundHash: string;
+    judgeAddress: string;
+  };
+}
+export interface MsgConfirmBtcWithdrawAminoType extends AminoMsg {
+  type: "/twilightproject.nyks.bridge.MsgConfirmBtcWithdraw";
+  value: {
+    txHash: string;
+    height: string;
+    hash: string;
+    judgeAddress: string;
   };
 }
 export const AminoConverter = {
   "/twilightproject.nyks.bridge.MsgConfirmBtcDeposit": {
     aminoType: "/twilightproject.nyks.bridge.MsgConfirmBtcDeposit",
     toAmino: ({
-      depositAddress,
+      reserveAddress,
       depositAmount,
       height,
       hash,
       twilightDepositAddress,
-      reserveAddress,
       oracleAddress
     }: MsgConfirmBtcDeposit): MsgConfirmBtcDepositAminoType["value"] => {
       return {
-        depositAddress,
+        reserveAddress,
         depositAmount: depositAmount.toString(),
         height: height.toString(),
         hash,
         twilightDepositAddress,
-        reserveAddress,
         oracleAddress
       };
     },
     fromAmino: ({
-      depositAddress,
+      reserveAddress,
       depositAmount,
       height,
       hash,
       twilightDepositAddress,
-      reserveAddress,
       oracleAddress
     }: MsgConfirmBtcDepositAminoType["value"]): MsgConfirmBtcDeposit => {
       return {
-        depositAddress,
+        reserveAddress,
         depositAmount: Long.fromString(depositAmount),
         height: Long.fromString(height),
         hash,
         twilightDepositAddress,
-        reserveAddress,
         oracleAddress
       };
     }
@@ -253,7 +258,6 @@ export const AminoConverter = {
   "/twilightproject.nyks.bridge.MsgSweepProposal": {
     aminoType: "/twilightproject.nyks.bridge.MsgSweepProposal",
     toAmino: ({
-      creator,
       reserveId,
       reserveAddress,
       judgeAddress,
@@ -262,12 +266,10 @@ export const AminoConverter = {
       privatePoolValue,
       publicValue,
       feePool,
-      individualTwilightReserveAccount,
       btcRefundTx,
       btcSweepTx
     }: MsgSweepProposal): MsgSweepProposalAminoType["value"] => {
       return {
-        creator,
         reserveId: reserveId.toString(),
         reserveAddress,
         judgeAddress,
@@ -276,16 +278,11 @@ export const AminoConverter = {
         privatePoolValue: privatePoolValue.toString(),
         publicValue: publicValue.toString(),
         feePool: feePool.toString(),
-        individualTwilightReserveAccount: individualTwilightReserveAccount.map(el0 => ({
-          TwilightAddress: el0.TwilightAddress,
-          BtcValue: el0.BtcValue.toString()
-        })),
         btcRefundTx,
         btcSweepTx
       };
     },
     fromAmino: ({
-      creator,
       reserveId,
       reserveAddress,
       judgeAddress,
@@ -294,12 +291,10 @@ export const AminoConverter = {
       privatePoolValue,
       publicValue,
       feePool,
-      individualTwilightReserveAccount,
       btcRefundTx,
       btcSweepTx
     }: MsgSweepProposalAminoType["value"]): MsgSweepProposal => {
       return {
-        creator,
         reserveId: Long.fromString(reserveId),
         reserveAddress,
         judgeAddress,
@@ -308,10 +303,6 @@ export const AminoConverter = {
         privatePoolValue: Long.fromString(privatePoolValue),
         publicValue: Long.fromString(publicValue),
         feePool: Long.fromString(feePool),
-        individualTwilightReserveAccount: individualTwilightReserveAccount.map(el0 => ({
-          TwilightAddress: el0.TwilightAddress,
-          BtcValue: Long.fromString(el0.BtcValue)
-        })),
         btcRefundTx,
         btcSweepTx
       };
@@ -367,90 +358,136 @@ export const AminoConverter = {
       };
     }
   },
-  "/twilightproject.nyks.bridge.MsgConfirmBtcWithdraw": {
-    aminoType: "/twilightproject.nyks.bridge.MsgConfirmBtcWithdraw",
-    toAmino: ({
-      creator,
-      validatorAddress,
-      txHash
-    }: MsgConfirmBtcWithdraw): MsgConfirmBtcWithdrawAminoType["value"] => {
-      return {
-        creator,
-        validatorAddress,
-        txHash
-      };
-    },
-    fromAmino: ({
-      creator,
-      validatorAddress,
-      txHash
-    }: MsgConfirmBtcWithdrawAminoType["value"]): MsgConfirmBtcWithdraw => {
-      return {
-        creator,
-        validatorAddress,
-        txHash
-      };
-    }
-  },
   "/twilightproject.nyks.bridge.MsgSignRefund": {
     aminoType: "/twilightproject.nyks.bridge.MsgSignRefund",
     toAmino: ({
-      creator,
       reserveAddress,
       signerAddress,
       refundSignature,
-      sweepSignature
+      btcOracleAddress
     }: MsgSignRefund): MsgSignRefundAminoType["value"] => {
       return {
-        creator,
         reserveAddress,
         signerAddress,
         refundSignature,
-        sweepSignature
+        btcOracleAddress
       };
     },
     fromAmino: ({
-      creator,
       reserveAddress,
       signerAddress,
       refundSignature,
-      sweepSignature
+      btcOracleAddress
     }: MsgSignRefundAminoType["value"]): MsgSignRefund => {
       return {
-        creator,
         reserveAddress,
         signerAddress,
         refundSignature,
-        sweepSignature
+        btcOracleAddress
       };
     }
   },
-  "/twilightproject.nyks.bridge.MsgBroadcastRefund": {
-    aminoType: "/twilightproject.nyks.bridge.MsgBroadcastRefund",
+  "/twilightproject.nyks.bridge.MsgBroadcastTxSweep": {
+    aminoType: "/twilightproject.nyks.bridge.MsgBroadcastTxSweep",
     toAmino: ({
-      creator,
-      judgeAddress,
       signedRefundTx,
-      signedSweepTx
-    }: MsgBroadcastRefund): MsgBroadcastRefundAminoType["value"] => {
+      signedSweepTx,
+      judgeAddress
+    }: MsgBroadcastTxSweep): MsgBroadcastTxSweepAminoType["value"] => {
       return {
-        creator,
-        judgeAddress,
         signedRefundTx,
-        signedSweepTx
+        signedSweepTx,
+        judgeAddress
       };
     },
     fromAmino: ({
-      creator,
-      judgeAddress,
       signedRefundTx,
-      signedSweepTx
-    }: MsgBroadcastRefundAminoType["value"]): MsgBroadcastRefund => {
+      signedSweepTx,
+      judgeAddress
+    }: MsgBroadcastTxSweepAminoType["value"]): MsgBroadcastTxSweep => {
       return {
-        creator,
-        judgeAddress,
         signedRefundTx,
-        signedSweepTx
+        signedSweepTx,
+        judgeAddress
+      };
+    }
+  },
+  "/twilightproject.nyks.bridge.MsgSignSweep": {
+    aminoType: "/twilightproject.nyks.bridge.MsgSignSweep",
+    toAmino: ({
+      reserveAddress,
+      signerAddress,
+      sweepSignature,
+      btcOracleAddress
+    }: MsgSignSweep): MsgSignSweepAminoType["value"] => {
+      return {
+        reserveAddress,
+        signerAddress,
+        sweepSignature,
+        btcOracleAddress
+      };
+    },
+    fromAmino: ({
+      reserveAddress,
+      signerAddress,
+      sweepSignature,
+      btcOracleAddress
+    }: MsgSignSweepAminoType["value"]): MsgSignSweep => {
+      return {
+        reserveAddress,
+        signerAddress,
+        sweepSignature,
+        btcOracleAddress
+      };
+    }
+  },
+  "/twilightproject.nyks.bridge.MsgProposeRefundHash": {
+    aminoType: "/twilightproject.nyks.bridge.MsgProposeRefundHash",
+    toAmino: ({
+      refundHash,
+      judgeAddress
+    }: MsgProposeRefundHash): MsgProposeRefundHashAminoType["value"] => {
+      return {
+        refundHash,
+        judgeAddress
+      };
+    },
+    fromAmino: ({
+      refundHash,
+      judgeAddress
+    }: MsgProposeRefundHashAminoType["value"]): MsgProposeRefundHash => {
+      return {
+        refundHash,
+        judgeAddress
+      };
+    }
+  },
+  "/twilightproject.nyks.bridge.MsgConfirmBtcWithdraw": {
+    aminoType: "/twilightproject.nyks.bridge.MsgConfirmBtcWithdraw",
+    toAmino: ({
+      txHash,
+      height,
+      hash,
+      judgeAddress
+    }: MsgConfirmBtcWithdraw): MsgConfirmBtcWithdrawAminoType["value"] => {
+      return {
+        txHash,
+        height: height.toString(),
+        hash,
+        judgeAddress
+      };
+    },
+    fromAmino: ({
+      txHash,
+      height,
+      hash,
+      judgeAddress
+    }: MsgConfirmBtcWithdrawAminoType["value"]): MsgConfirmBtcWithdraw => {
+      return {
+        txHash,
+        height: Long.fromString(height),
+        hash,
+        judgeAddress
       };
     }
   }

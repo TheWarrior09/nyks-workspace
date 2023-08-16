@@ -1,6 +1,6 @@
 import { GeneratedType, Registry } from "@cosmjs/proto-signing";
-import { MsgConfirmBtcDeposit, MsgRegisterBtcDepositAddress, MsgRegisterReserveAddress, MsgRegisterJudge, MsgWithdrawBtcRequest, MsgSweepProposal, MsgWithdrawTxSigned, MsgWithdrawTxFinal, MsgConfirmBtcWithdraw, MsgSignRefund, MsgBroadcastRefund } from "./tx";
-export const registry: ReadonlyArray<[string, GeneratedType]> = [["/twilightproject.nyks.bridge.MsgConfirmBtcDeposit", MsgConfirmBtcDeposit], ["/twilightproject.nyks.bridge.MsgRegisterBtcDepositAddress", MsgRegisterBtcDepositAddress], ["/twilightproject.nyks.bridge.MsgRegisterReserveAddress", MsgRegisterReserveAddress], ["/twilightproject.nyks.bridge.MsgRegisterJudge", MsgRegisterJudge], ["/twilightproject.nyks.bridge.MsgWithdrawBtcRequest", MsgWithdrawBtcRequest], ["/twilightproject.nyks.bridge.MsgSweepProposal", MsgSweepProposal], ["/twilightproject.nyks.bridge.MsgWithdrawTxSigned", MsgWithdrawTxSigned], ["/twilightproject.nyks.bridge.MsgWithdrawTxFinal", MsgWithdrawTxFinal], ["/twilightproject.nyks.bridge.MsgConfirmBtcWithdraw", MsgConfirmBtcWithdraw], ["/twilightproject.nyks.bridge.MsgSignRefund", MsgSignRefund], ["/twilightproject.nyks.bridge.MsgBroadcastRefund", MsgBroadcastRefund]];
+import { MsgConfirmBtcDeposit, MsgRegisterBtcDepositAddress, MsgRegisterReserveAddress, MsgRegisterJudge, MsgWithdrawBtcRequest, MsgSweepProposal, MsgWithdrawTxSigned, MsgWithdrawTxFinal, MsgSignRefund, MsgBroadcastTxSweep, MsgSignSweep, MsgProposeRefundHash, MsgConfirmBtcWithdraw } from "./tx";
+export const registry: ReadonlyArray<[string, GeneratedType]> = [["/twilightproject.nyks.bridge.MsgConfirmBtcDeposit", MsgConfirmBtcDeposit], ["/twilightproject.nyks.bridge.MsgRegisterBtcDepositAddress", MsgRegisterBtcDepositAddress], ["/twilightproject.nyks.bridge.MsgRegisterReserveAddress", MsgRegisterReserveAddress], ["/twilightproject.nyks.bridge.MsgRegisterJudge", MsgRegisterJudge], ["/twilightproject.nyks.bridge.MsgWithdrawBtcRequest", MsgWithdrawBtcRequest], ["/twilightproject.nyks.bridge.MsgSweepProposal", MsgSweepProposal], ["/twilightproject.nyks.bridge.MsgWithdrawTxSigned", MsgWithdrawTxSigned], ["/twilightproject.nyks.bridge.MsgWithdrawTxFinal", MsgWithdrawTxFinal], ["/twilightproject.nyks.bridge.MsgSignRefund", MsgSignRefund], ["/twilightproject.nyks.bridge.MsgBroadcastTxSweep", MsgBroadcastTxSweep], ["/twilightproject.nyks.bridge.MsgSignSweep", MsgSignSweep], ["/twilightproject.nyks.bridge.MsgProposeRefundHash", MsgProposeRefundHash], ["/twilightproject.nyks.bridge.MsgConfirmBtcWithdraw", MsgConfirmBtcWithdraw]];
 export const load = (protoRegistry: Registry) => {
   registry.forEach(([typeUrl, mod]) => {
     protoRegistry.register(typeUrl, mod);
@@ -56,22 +56,34 @@ export const MessageComposer = {
         value: MsgWithdrawTxFinal.encode(value).finish()
       };
     },
-    confirmBtcWithdraw(value: MsgConfirmBtcWithdraw) {
-      return {
-        typeUrl: "/twilightproject.nyks.bridge.MsgConfirmBtcWithdraw",
-        value: MsgConfirmBtcWithdraw.encode(value).finish()
-      };
-    },
     signRefund(value: MsgSignRefund) {
       return {
         typeUrl: "/twilightproject.nyks.bridge.MsgSignRefund",
         value: MsgSignRefund.encode(value).finish()
       };
     },
-    broadcastRefund(value: MsgBroadcastRefund) {
+    broadcastTxSweep(value: MsgBroadcastTxSweep) {
       return {
-        typeUrl: "/twilightproject.nyks.bridge.MsgBroadcastRefund",
-        value: MsgBroadcastRefund.encode(value).finish()
+        typeUrl: "/twilightproject.nyks.bridge.MsgBroadcastTxSweep",
+        value: MsgBroadcastTxSweep.encode(value).finish()
+      };
+    },
+    signSweep(value: MsgSignSweep) {
+      return {
+        typeUrl: "/twilightproject.nyks.bridge.MsgSignSweep",
+        value: MsgSignSweep.encode(value).finish()
+      };
+    },
+    proposeRefundHash(value: MsgProposeRefundHash) {
+      return {
+        typeUrl: "/twilightproject.nyks.bridge.MsgProposeRefundHash",
+        value: MsgProposeRefundHash.encode(value).finish()
+      };
+    },
+    confirmBtcWithdraw(value: MsgConfirmBtcWithdraw) {
+      return {
+        typeUrl: "/twilightproject.nyks.bridge.MsgConfirmBtcWithdraw",
+        value: MsgConfirmBtcWithdraw.encode(value).finish()
       };
     }
   },
@@ -124,21 +136,33 @@ export const MessageComposer = {
         value
       };
     },
-    confirmBtcWithdraw(value: MsgConfirmBtcWithdraw) {
-      return {
-        typeUrl: "/twilightproject.nyks.bridge.MsgConfirmBtcWithdraw",
-        value
-      };
-    },
     signRefund(value: MsgSignRefund) {
       return {
         typeUrl: "/twilightproject.nyks.bridge.MsgSignRefund",
         value
       };
     },
-    broadcastRefund(value: MsgBroadcastRefund) {
+    broadcastTxSweep(value: MsgBroadcastTxSweep) {
       return {
-        typeUrl: "/twilightproject.nyks.bridge.MsgBroadcastRefund",
+        typeUrl: "/twilightproject.nyks.bridge.MsgBroadcastTxSweep",
+        value
+      };
+    },
+    signSweep(value: MsgSignSweep) {
+      return {
+        typeUrl: "/twilightproject.nyks.bridge.MsgSignSweep",
+        value
+      };
+    },
+    proposeRefundHash(value: MsgProposeRefundHash) {
+      return {
+        typeUrl: "/twilightproject.nyks.bridge.MsgProposeRefundHash",
+        value
+      };
+    },
+    confirmBtcWithdraw(value: MsgConfirmBtcWithdraw) {
+      return {
+        typeUrl: "/twilightproject.nyks.bridge.MsgConfirmBtcWithdraw",
         value
       };
     }
@@ -192,22 +216,34 @@ export const MessageComposer = {
         value: MsgWithdrawTxFinal.toJSON(value)
       };
     },
-    confirmBtcWithdraw(value: MsgConfirmBtcWithdraw) {
-      return {
-        typeUrl: "/twilightproject.nyks.bridge.MsgConfirmBtcWithdraw",
-        value: MsgConfirmBtcWithdraw.toJSON(value)
-      };
-    },
     signRefund(value: MsgSignRefund) {
       return {
         typeUrl: "/twilightproject.nyks.bridge.MsgSignRefund",
         value: MsgSignRefund.toJSON(value)
       };
     },
-    broadcastRefund(value: MsgBroadcastRefund) {
+    broadcastTxSweep(value: MsgBroadcastTxSweep) {
       return {
-        typeUrl: "/twilightproject.nyks.bridge.MsgBroadcastRefund",
-        value: MsgBroadcastRefund.toJSON(value)
+        typeUrl: "/twilightproject.nyks.bridge.MsgBroadcastTxSweep",
+        value: MsgBroadcastTxSweep.toJSON(value)
+      };
+    },
+    signSweep(value: MsgSignSweep) {
+      return {
+        typeUrl: "/twilightproject.nyks.bridge.MsgSignSweep",
+        value: MsgSignSweep.toJSON(value)
+      };
+    },
+    proposeRefundHash(value: MsgProposeRefundHash) {
+      return {
+        typeUrl: "/twilightproject.nyks.bridge.MsgProposeRefundHash",
+        value: MsgProposeRefundHash.toJSON(value)
+      };
+    },
+    confirmBtcWithdraw(value: MsgConfirmBtcWithdraw) {
+      return {
+        typeUrl: "/twilightproject.nyks.bridge.MsgConfirmBtcWithdraw",
+        value: MsgConfirmBtcWithdraw.toJSON(value)
       };
     }
   },
@@ -260,22 +296,34 @@ export const MessageComposer = {
         value: MsgWithdrawTxFinal.fromJSON(value)
       };
     },
-    confirmBtcWithdraw(value: any) {
-      return {
-        typeUrl: "/twilightproject.nyks.bridge.MsgConfirmBtcWithdraw",
-        value: MsgConfirmBtcWithdraw.fromJSON(value)
-      };
-    },
     signRefund(value: any) {
       return {
         typeUrl: "/twilightproject.nyks.bridge.MsgSignRefund",
         value: MsgSignRefund.fromJSON(value)
       };
     },
-    broadcastRefund(value: any) {
+    broadcastTxSweep(value: any) {
       return {
-        typeUrl: "/twilightproject.nyks.bridge.MsgBroadcastRefund",
-        value: MsgBroadcastRefund.fromJSON(value)
+        typeUrl: "/twilightproject.nyks.bridge.MsgBroadcastTxSweep",
+        value: MsgBroadcastTxSweep.fromJSON(value)
+      };
+    },
+    signSweep(value: any) {
+      return {
+        typeUrl: "/twilightproject.nyks.bridge.MsgSignSweep",
+        value: MsgSignSweep.fromJSON(value)
+      };
+    },
+    proposeRefundHash(value: any) {
+      return {
+        typeUrl: "/twilightproject.nyks.bridge.MsgProposeRefundHash",
+        value: MsgProposeRefundHash.fromJSON(value)
+      };
+    },
+    confirmBtcWithdraw(value: any) {
+      return {
+        typeUrl: "/twilightproject.nyks.bridge.MsgConfirmBtcWithdraw",
+        value: MsgConfirmBtcWithdraw.fromJSON(value)
       };
     }
   },
@@ -328,22 +376,34 @@ export const MessageComposer = {
         value: MsgWithdrawTxFinal.fromPartial(value)
       };
     },
-    confirmBtcWithdraw(value: MsgConfirmBtcWithdraw) {
-      return {
-        typeUrl: "/twilightproject.nyks.bridge.MsgConfirmBtcWithdraw",
-        value: MsgConfirmBtcWithdraw.fromPartial(value)
-      };
-    },
     signRefund(value: MsgSignRefund) {
       return {
         typeUrl: "/twilightproject.nyks.bridge.MsgSignRefund",
         value: MsgSignRefund.fromPartial(value)
       };
     },
-    broadcastRefund(value: MsgBroadcastRefund) {
+    broadcastTxSweep(value: MsgBroadcastTxSweep) {
       return {
-        typeUrl: "/twilightproject.nyks.bridge.MsgBroadcastRefund",
-        value: MsgBroadcastRefund.fromPartial(value)
+        typeUrl: "/twilightproject.nyks.bridge.MsgBroadcastTxSweep",
+        value: MsgBroadcastTxSweep.fromPartial(value)
+      };
+    },
+    signSweep(value: MsgSignSweep) {
+      return {
+        typeUrl: "/twilightproject.nyks.bridge.MsgSignSweep",
+        value: MsgSignSweep.fromPartial(value)
+      };
+    },
+    proposeRefundHash(value: MsgProposeRefundHash) {
+      return {
+        typeUrl: "/twilightproject.nyks.bridge.MsgProposeRefundHash",
+        value: MsgProposeRefundHash.fromPartial(value)
+      };
+    },
+    confirmBtcWithdraw(value: MsgConfirmBtcWithdraw) {
+      return {
+        typeUrl: "/twilightproject.nyks.bridge.MsgConfirmBtcWithdraw",
+        value: MsgConfirmBtcWithdraw.fromPartial(value)
       };
     }
   }

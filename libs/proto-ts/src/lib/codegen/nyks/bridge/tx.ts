@@ -1,22 +1,19 @@
-import { IndividualTwilightReserveAccount, IndividualTwilightReserveAccountSDKType } from "../volt/reserve";
 import { Long, isSet, DeepPartial } from "../../helpers";
 import * as _m0 from "protobufjs/minimal";
 export interface MsgConfirmBtcDeposit {
-  depositAddress: string;
+  reserveAddress: string;
   depositAmount: Long;
   height: Long;
   hash: string;
   twilightDepositAddress: string;
-  reserveAddress: string;
   oracleAddress: string;
 }
 export interface MsgConfirmBtcDepositSDKType {
-  depositAddress: string;
+  reserveAddress: string;
   depositAmount: Long;
   height: Long;
   hash: string;
   twilightDepositAddress: string;
-  reserveAddress: string;
   oracleAddress: string;
 }
 export interface MsgConfirmBtcDepositResponse {
@@ -80,7 +77,6 @@ export interface MsgWithdrawBtcRequestSDKType {
 export interface MsgWithdrawBtcRequestResponse {}
 export interface MsgWithdrawBtcRequestResponseSDKType {}
 export interface MsgSweepProposal {
-  creator: string;
   reserveId: Long;
   reserveAddress: string;
   judgeAddress: string;
@@ -89,12 +85,10 @@ export interface MsgSweepProposal {
   privatePoolValue: Long;
   publicValue: Long;
   feePool: Long;
-  individualTwilightReserveAccount: IndividualTwilightReserveAccount[];
   btcRefundTx: string;
   btcSweepTx: string;
 }
 export interface MsgSweepProposalSDKType {
-  creator: string;
   reserveId: Long;
   reserveAddress: string;
   judgeAddress: string;
@@ -103,7 +97,6 @@ export interface MsgSweepProposalSDKType {
   privatePoolValue: Long;
   publicValue: Long;
   feePool: Long;
-  individualTwilightReserveAccount: IndividualTwilightReserveAccountSDKType[];
   btcRefundTx: string;
   btcSweepTx: string;
 }
@@ -133,63 +126,84 @@ export interface MsgWithdrawTxFinalSDKType {
 }
 export interface MsgWithdrawTxFinalResponse {}
 export interface MsgWithdrawTxFinalResponseSDKType {}
-export interface MsgConfirmBtcWithdraw {
-  creator: string;
-  validatorAddress: string;
-  txHash: string;
-}
-export interface MsgConfirmBtcWithdrawSDKType {
-  creator: string;
-  validatorAddress: string;
-  txHash: string;
-}
-export interface MsgConfirmBtcWithdrawResponse {}
-export interface MsgConfirmBtcWithdrawResponseSDKType {}
 export interface MsgSignRefund {
-  creator: string;
   reserveAddress: string;
   signerAddress: string;
   refundSignature: string;
-  sweepSignature: string;
+  btcOracleAddress: string;
 }
 export interface MsgSignRefundSDKType {
-  creator: string;
   reserveAddress: string;
   signerAddress: string;
   refundSignature: string;
-  sweepSignature: string;
+  btcOracleAddress: string;
 }
 export interface MsgSignRefundResponse {}
 export interface MsgSignRefundResponseSDKType {}
-export interface MsgBroadcastRefund {
-  creator: string;
-  judgeAddress: string;
+export interface MsgSignSweep {
+  reserveAddress: string;
+  signerAddress: string;
+  sweepSignature: string;
+  btcOracleAddress: string;
+}
+export interface MsgSignSweepSDKType {
+  reserveAddress: string;
+  signerAddress: string;
+  sweepSignature: string;
+  btcOracleAddress: string;
+}
+export interface MsgSignSweepResponse {}
+export interface MsgSignSweepResponseSDKType {}
+export interface MsgBroadcastTxSweep {
   signedRefundTx: string;
   signedSweepTx: string;
-}
-export interface MsgBroadcastRefundSDKType {
-  creator: string;
   judgeAddress: string;
+}
+export interface MsgBroadcastTxSweepSDKType {
   signedRefundTx: string;
   signedSweepTx: string;
+  judgeAddress: string;
 }
-export interface MsgBroadcastRefundResponse {}
-export interface MsgBroadcastRefundResponseSDKType {}
+export interface MsgBroadcastTxSweepResponse {}
+export interface MsgBroadcastTxSweepResponseSDKType {}
+export interface MsgProposeRefundHash {
+  refundHash: string;
+  judgeAddress: string;
+}
+export interface MsgProposeRefundHashSDKType {
+  refundHash: string;
+  judgeAddress: string;
+}
+export interface MsgProposeRefundHashResponse {}
+export interface MsgProposeRefundHashResponseSDKType {}
+export interface MsgConfirmBtcWithdraw {
+  txHash: string;
+  height: Long;
+  hash: string;
+  judgeAddress: string;
+}
+export interface MsgConfirmBtcWithdrawSDKType {
+  txHash: string;
+  height: Long;
+  hash: string;
+  judgeAddress: string;
+}
+export interface MsgConfirmBtcWithdrawResponse {}
+export interface MsgConfirmBtcWithdrawResponseSDKType {}
 function createBaseMsgConfirmBtcDeposit(): MsgConfirmBtcDeposit {
   return {
-    depositAddress: "",
+    reserveAddress: "",
     depositAmount: Long.UZERO,
     height: Long.UZERO,
     hash: "",
     twilightDepositAddress: "",
-    reserveAddress: "",
     oracleAddress: ""
   };
 }
 export const MsgConfirmBtcDeposit = {
   encode(message: MsgConfirmBtcDeposit, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.depositAddress !== "") {
-      writer.uint32(10).string(message.depositAddress);
+    if (message.reserveAddress !== "") {
+      writer.uint32(10).string(message.reserveAddress);
     }
     if (!message.depositAmount.isZero()) {
       writer.uint32(16).uint64(message.depositAmount);
@@ -202,9 +216,6 @@ export const MsgConfirmBtcDeposit = {
     }
     if (message.twilightDepositAddress !== "") {
       writer.uint32(42).string(message.twilightDepositAddress);
-    }
-    if (message.reserveAddress !== "") {
-      writer.uint32(50).string(message.reserveAddress);
     }
     if (message.oracleAddress !== "") {
       writer.uint32(58).string(message.oracleAddress);
@@ -219,7 +230,7 @@ export const MsgConfirmBtcDeposit = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
-          message.depositAddress = reader.string();
+          message.reserveAddress = reader.string();
           break;
         case 2:
           message.depositAmount = (reader.uint64() as Long);
@@ -233,9 +244,6 @@ export const MsgConfirmBtcDeposit = {
         case 5:
           message.twilightDepositAddress = reader.string();
           break;
-        case 6:
-          message.reserveAddress = reader.string();
-          break;
         case 7:
           message.oracleAddress = reader.string();
           break;
@@ -248,34 +256,31 @@ export const MsgConfirmBtcDeposit = {
   },
   fromJSON(object: any): MsgConfirmBtcDeposit {
     return {
-      depositAddress: isSet(object.depositAddress) ? String(object.depositAddress) : "",
+      reserveAddress: isSet(object.reserveAddress) ? String(object.reserveAddress) : "",
       depositAmount: isSet(object.depositAmount) ? Long.fromValue(object.depositAmount) : Long.UZERO,
       height: isSet(object.height) ? Long.fromValue(object.height) : Long.UZERO,
       hash: isSet(object.hash) ? String(object.hash) : "",
       twilightDepositAddress: isSet(object.twilightDepositAddress) ? String(object.twilightDepositAddress) : "",
-      reserveAddress: isSet(object.reserveAddress) ? String(object.reserveAddress) : "",
       oracleAddress: isSet(object.oracleAddress) ? String(object.oracleAddress) : ""
     };
   },
   toJSON(message: MsgConfirmBtcDeposit): unknown {
     const obj: any = {};
-    message.depositAddress !== undefined && (obj.depositAddress = message.depositAddress);
+    message.reserveAddress !== undefined && (obj.reserveAddress = message.reserveAddress);
     message.depositAmount !== undefined && (obj.depositAmount = (message.depositAmount || Long.UZERO).toString());
     message.height !== undefined && (obj.height = (message.height || Long.UZERO).toString());
     message.hash !== undefined && (obj.hash = message.hash);
     message.twilightDepositAddress !== undefined && (obj.twilightDepositAddress = message.twilightDepositAddress);
-    message.reserveAddress !== undefined && (obj.reserveAddress = message.reserveAddress);
     message.oracleAddress !== undefined && (obj.oracleAddress = message.oracleAddress);
     return obj;
   },
   fromPartial(object: DeepPartial<MsgConfirmBtcDeposit>): MsgConfirmBtcDeposit {
     const message = createBaseMsgConfirmBtcDeposit();
-    message.depositAddress = object.depositAddress ?? "";
+    message.reserveAddress = object.reserveAddress ?? "";
     message.depositAmount = object.depositAmount !== undefined && object.depositAmount !== null ? Long.fromValue(object.depositAmount) : Long.UZERO;
     message.height = object.height !== undefined && object.height !== null ? Long.fromValue(object.height) : Long.UZERO;
     message.hash = object.hash ?? "";
     message.twilightDepositAddress = object.twilightDepositAddress ?? "";
-    message.reserveAddress = object.reserveAddress ?? "";
     message.oracleAddress = object.oracleAddress ?? "";
     return message;
   }
@@ -731,7 +736,6 @@ export const MsgWithdrawBtcRequestResponse = {
 };
 function createBaseMsgSweepProposal(): MsgSweepProposal {
   return {
-    creator: "",
     reserveId: Long.UZERO,
     reserveAddress: "",
     judgeAddress: "",
@@ -740,48 +744,41 @@ function createBaseMsgSweepProposal(): MsgSweepProposal {
     privatePoolValue: Long.UZERO,
     publicValue: Long.UZERO,
     feePool: Long.UZERO,
-    individualTwilightReserveAccount: [],
     btcRefundTx: "",
     btcSweepTx: ""
   };
 }
 export const MsgSweepProposal = {
   encode(message: MsgSweepProposal, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.creator !== "") {
-      writer.uint32(10).string(message.creator);
-    }
     if (!message.reserveId.isZero()) {
-      writer.uint32(16).uint64(message.reserveId);
+      writer.uint32(8).uint64(message.reserveId);
     }
     if (message.reserveAddress !== "") {
-      writer.uint32(26).string(message.reserveAddress);
+      writer.uint32(18).string(message.reserveAddress);
     }
     if (message.judgeAddress !== "") {
-      writer.uint32(34).string(message.judgeAddress);
+      writer.uint32(26).string(message.judgeAddress);
     }
     if (!message.btcRelayCapacityValue.isZero()) {
-      writer.uint32(40).uint64(message.btcRelayCapacityValue);
+      writer.uint32(32).uint64(message.btcRelayCapacityValue);
     }
     if (!message.totalValue.isZero()) {
-      writer.uint32(48).uint64(message.totalValue);
+      writer.uint32(40).uint64(message.totalValue);
     }
     if (!message.privatePoolValue.isZero()) {
-      writer.uint32(56).uint64(message.privatePoolValue);
+      writer.uint32(48).uint64(message.privatePoolValue);
     }
     if (!message.publicValue.isZero()) {
-      writer.uint32(64).uint64(message.publicValue);
+      writer.uint32(56).uint64(message.publicValue);
     }
     if (!message.feePool.isZero()) {
-      writer.uint32(72).uint64(message.feePool);
-    }
-    for (const v of message.individualTwilightReserveAccount) {
-      IndividualTwilightReserveAccount.encode(v!, writer.uint32(82).fork()).ldelim();
+      writer.uint32(64).uint64(message.feePool);
     }
     if (message.btcRefundTx !== "") {
-      writer.uint32(90).string(message.btcRefundTx);
+      writer.uint32(74).string(message.btcRefundTx);
     }
     if (message.btcSweepTx !== "") {
-      writer.uint32(98).string(message.btcSweepTx);
+      writer.uint32(82).string(message.btcSweepTx);
     }
     return writer;
   },
@@ -793,39 +790,33 @@ export const MsgSweepProposal = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
-          message.creator = reader.string();
-          break;
-        case 2:
           message.reserveId = (reader.uint64() as Long);
           break;
-        case 3:
+        case 2:
           message.reserveAddress = reader.string();
           break;
-        case 4:
+        case 3:
           message.judgeAddress = reader.string();
           break;
-        case 5:
+        case 4:
           message.btcRelayCapacityValue = (reader.uint64() as Long);
           break;
-        case 6:
+        case 5:
           message.totalValue = (reader.uint64() as Long);
           break;
-        case 7:
+        case 6:
           message.privatePoolValue = (reader.uint64() as Long);
           break;
-        case 8:
+        case 7:
           message.publicValue = (reader.uint64() as Long);
           break;
-        case 9:
+        case 8:
           message.feePool = (reader.uint64() as Long);
           break;
-        case 10:
-          message.individualTwilightReserveAccount.push(IndividualTwilightReserveAccount.decode(reader, reader.uint32()));
-          break;
-        case 11:
+        case 9:
           message.btcRefundTx = reader.string();
           break;
-        case 12:
+        case 10:
           message.btcSweepTx = reader.string();
           break;
         default:
@@ -837,7 +828,6 @@ export const MsgSweepProposal = {
   },
   fromJSON(object: any): MsgSweepProposal {
     return {
-      creator: isSet(object.creator) ? String(object.creator) : "",
       reserveId: isSet(object.reserveId) ? Long.fromValue(object.reserveId) : Long.UZERO,
       reserveAddress: isSet(object.reserveAddress) ? String(object.reserveAddress) : "",
       judgeAddress: isSet(object.judgeAddress) ? String(object.judgeAddress) : "",
@@ -846,14 +836,12 @@ export const MsgSweepProposal = {
       privatePoolValue: isSet(object.privatePoolValue) ? Long.fromValue(object.privatePoolValue) : Long.UZERO,
       publicValue: isSet(object.publicValue) ? Long.fromValue(object.publicValue) : Long.UZERO,
       feePool: isSet(object.feePool) ? Long.fromValue(object.feePool) : Long.UZERO,
-      individualTwilightReserveAccount: Array.isArray(object?.individualTwilightReserveAccount) ? object.individualTwilightReserveAccount.map((e: any) => IndividualTwilightReserveAccount.fromJSON(e)) : [],
       btcRefundTx: isSet(object.btcRefundTx) ? String(object.btcRefundTx) : "",
       btcSweepTx: isSet(object.btcSweepTx) ? String(object.btcSweepTx) : ""
     };
   },
   toJSON(message: MsgSweepProposal): unknown {
     const obj: any = {};
-    message.creator !== undefined && (obj.creator = message.creator);
     message.reserveId !== undefined && (obj.reserveId = (message.reserveId || Long.UZERO).toString());
     message.reserveAddress !== undefined && (obj.reserveAddress = message.reserveAddress);
     message.judgeAddress !== undefined && (obj.judgeAddress = message.judgeAddress);
@@ -862,18 +850,12 @@ export const MsgSweepProposal = {
     message.privatePoolValue !== undefined && (obj.privatePoolValue = (message.privatePoolValue || Long.UZERO).toString());
     message.publicValue !== undefined && (obj.publicValue = (message.publicValue || Long.UZERO).toString());
     message.feePool !== undefined && (obj.feePool = (message.feePool || Long.UZERO).toString());
-    if (message.individualTwilightReserveAccount) {
-      obj.individualTwilightReserveAccount = message.individualTwilightReserveAccount.map(e => e ? IndividualTwilightReserveAccount.toJSON(e) : undefined);
-    } else {
-      obj.individualTwilightReserveAccount = [];
-    }
     message.btcRefundTx !== undefined && (obj.btcRefundTx = message.btcRefundTx);
     message.btcSweepTx !== undefined && (obj.btcSweepTx = message.btcSweepTx);
     return obj;
   },
   fromPartial(object: DeepPartial<MsgSweepProposal>): MsgSweepProposal {
     const message = createBaseMsgSweepProposal();
-    message.creator = object.creator ?? "";
     message.reserveId = object.reserveId !== undefined && object.reserveId !== null ? Long.fromValue(object.reserveId) : Long.UZERO;
     message.reserveAddress = object.reserveAddress ?? "";
     message.judgeAddress = object.judgeAddress ?? "";
@@ -882,7 +864,6 @@ export const MsgSweepProposal = {
     message.privatePoolValue = object.privatePoolValue !== undefined && object.privatePoolValue !== null ? Long.fromValue(object.privatePoolValue) : Long.UZERO;
     message.publicValue = object.publicValue !== undefined && object.publicValue !== null ? Long.fromValue(object.publicValue) : Long.UZERO;
     message.feePool = object.feePool !== undefined && object.feePool !== null ? Long.fromValue(object.feePool) : Long.UZERO;
-    message.individualTwilightReserveAccount = object.individualTwilightReserveAccount?.map(e => IndividualTwilightReserveAccount.fromPartial(e)) || [];
     message.btcRefundTx = object.btcRefundTx ?? "";
     message.btcSweepTx = object.btcSweepTx ?? "";
     return message;
@@ -1117,129 +1098,27 @@ export const MsgWithdrawTxFinalResponse = {
     return message;
   }
 };
-function createBaseMsgConfirmBtcWithdraw(): MsgConfirmBtcWithdraw {
-  return {
-    creator: "",
-    validatorAddress: "",
-    txHash: ""
-  };
-}
-export const MsgConfirmBtcWithdraw = {
-  encode(message: MsgConfirmBtcWithdraw, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.creator !== "") {
-      writer.uint32(10).string(message.creator);
-    }
-    if (message.validatorAddress !== "") {
-      writer.uint32(18).string(message.validatorAddress);
-    }
-    if (message.txHash !== "") {
-      writer.uint32(26).string(message.txHash);
-    }
-    return writer;
-  },
-  decode(input: _m0.Reader | Uint8Array, length?: number): MsgConfirmBtcWithdraw {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
-    let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseMsgConfirmBtcWithdraw();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1:
-          message.creator = reader.string();
-          break;
-        case 2:
-          message.validatorAddress = reader.string();
-          break;
-        case 3:
-          message.txHash = reader.string();
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
-      }
-    }
-    return message;
-  },
-  fromJSON(object: any): MsgConfirmBtcWithdraw {
-    return {
-      creator: isSet(object.creator) ? String(object.creator) : "",
-      validatorAddress: isSet(object.validatorAddress) ? String(object.validatorAddress) : "",
-      txHash: isSet(object.txHash) ? String(object.txHash) : ""
-    };
-  },
-  toJSON(message: MsgConfirmBtcWithdraw): unknown {
-    const obj: any = {};
-    message.creator !== undefined && (obj.creator = message.creator);
-    message.validatorAddress !== undefined && (obj.validatorAddress = message.validatorAddress);
-    message.txHash !== undefined && (obj.txHash = message.txHash);
-    return obj;
-  },
-  fromPartial(object: DeepPartial<MsgConfirmBtcWithdraw>): MsgConfirmBtcWithdraw {
-    const message = createBaseMsgConfirmBtcWithdraw();
-    message.creator = object.creator ?? "";
-    message.validatorAddress = object.validatorAddress ?? "";
-    message.txHash = object.txHash ?? "";
-    return message;
-  }
-};
-function createBaseMsgConfirmBtcWithdrawResponse(): MsgConfirmBtcWithdrawResponse {
-  return {};
-}
-export const MsgConfirmBtcWithdrawResponse = {
-  encode(_: MsgConfirmBtcWithdrawResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    return writer;
-  },
-  decode(input: _m0.Reader | Uint8Array, length?: number): MsgConfirmBtcWithdrawResponse {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
-    let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseMsgConfirmBtcWithdrawResponse();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        default:
-          reader.skipType(tag & 7);
-          break;
-      }
-    }
-    return message;
-  },
-  fromJSON(_: any): MsgConfirmBtcWithdrawResponse {
-    return {};
-  },
-  toJSON(_: MsgConfirmBtcWithdrawResponse): unknown {
-    const obj: any = {};
-    return obj;
-  },
-  fromPartial(_: DeepPartial<MsgConfirmBtcWithdrawResponse>): MsgConfirmBtcWithdrawResponse {
-    const message = createBaseMsgConfirmBtcWithdrawResponse();
-    return message;
-  }
-};
 function createBaseMsgSignRefund(): MsgSignRefund {
   return {
-    creator: "",
     reserveAddress: "",
     signerAddress: "",
     refundSignature: "",
-    sweepSignature: ""
+    btcOracleAddress: ""
   };
 }
 export const MsgSignRefund = {
   encode(message: MsgSignRefund, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.creator !== "") {
-      writer.uint32(10).string(message.creator);
-    }
     if (message.reserveAddress !== "") {
-      writer.uint32(18).string(message.reserveAddress);
+      writer.uint32(10).string(message.reserveAddress);
     }
     if (message.signerAddress !== "") {
-      writer.uint32(26).string(message.signerAddress);
+      writer.uint32(18).string(message.signerAddress);
     }
     if (message.refundSignature !== "") {
-      writer.uint32(34).string(message.refundSignature);
+      writer.uint32(26).string(message.refundSignature);
     }
-    if (message.sweepSignature !== "") {
-      writer.uint32(42).string(message.sweepSignature);
+    if (message.btcOracleAddress !== "") {
+      writer.uint32(34).string(message.btcOracleAddress);
     }
     return writer;
   },
@@ -1251,19 +1130,16 @@ export const MsgSignRefund = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
-          message.creator = reader.string();
-          break;
-        case 2:
           message.reserveAddress = reader.string();
           break;
-        case 3:
+        case 2:
           message.signerAddress = reader.string();
           break;
-        case 4:
+        case 3:
           message.refundSignature = reader.string();
           break;
-        case 5:
-          message.sweepSignature = reader.string();
+        case 4:
+          message.btcOracleAddress = reader.string();
           break;
         default:
           reader.skipType(tag & 7);
@@ -1274,29 +1150,26 @@ export const MsgSignRefund = {
   },
   fromJSON(object: any): MsgSignRefund {
     return {
-      creator: isSet(object.creator) ? String(object.creator) : "",
       reserveAddress: isSet(object.reserveAddress) ? String(object.reserveAddress) : "",
       signerAddress: isSet(object.signerAddress) ? String(object.signerAddress) : "",
       refundSignature: isSet(object.refundSignature) ? String(object.refundSignature) : "",
-      sweepSignature: isSet(object.sweepSignature) ? String(object.sweepSignature) : ""
+      btcOracleAddress: isSet(object.btcOracleAddress) ? String(object.btcOracleAddress) : ""
     };
   },
   toJSON(message: MsgSignRefund): unknown {
     const obj: any = {};
-    message.creator !== undefined && (obj.creator = message.creator);
     message.reserveAddress !== undefined && (obj.reserveAddress = message.reserveAddress);
     message.signerAddress !== undefined && (obj.signerAddress = message.signerAddress);
     message.refundSignature !== undefined && (obj.refundSignature = message.refundSignature);
-    message.sweepSignature !== undefined && (obj.sweepSignature = message.sweepSignature);
+    message.btcOracleAddress !== undefined && (obj.btcOracleAddress = message.btcOracleAddress);
     return obj;
   },
   fromPartial(object: DeepPartial<MsgSignRefund>): MsgSignRefund {
     const message = createBaseMsgSignRefund();
-    message.creator = object.creator ?? "";
     message.reserveAddress = object.reserveAddress ?? "";
     message.signerAddress = object.signerAddress ?? "";
     message.refundSignature = object.refundSignature ?? "";
-    message.sweepSignature = object.sweepSignature ?? "";
+    message.btcOracleAddress = object.btcOracleAddress ?? "";
     return message;
   }
 };
@@ -1333,48 +1206,48 @@ export const MsgSignRefundResponse = {
     return message;
   }
 };
-function createBaseMsgBroadcastRefund(): MsgBroadcastRefund {
+function createBaseMsgSignSweep(): MsgSignSweep {
   return {
-    creator: "",
-    judgeAddress: "",
-    signedRefundTx: "",
-    signedSweepTx: ""
+    reserveAddress: "",
+    signerAddress: "",
+    sweepSignature: "",
+    btcOracleAddress: ""
   };
 }
-export const MsgBroadcastRefund = {
-  encode(message: MsgBroadcastRefund, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.creator !== "") {
-      writer.uint32(10).string(message.creator);
+export const MsgSignSweep = {
+  encode(message: MsgSignSweep, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.reserveAddress !== "") {
+      writer.uint32(10).string(message.reserveAddress);
     }
-    if (message.judgeAddress !== "") {
-      writer.uint32(18).string(message.judgeAddress);
+    if (message.signerAddress !== "") {
+      writer.uint32(18).string(message.signerAddress);
     }
-    if (message.signedRefundTx !== "") {
-      writer.uint32(26).string(message.signedRefundTx);
+    if (message.sweepSignature !== "") {
+      writer.uint32(26).string(message.sweepSignature);
     }
-    if (message.signedSweepTx !== "") {
-      writer.uint32(34).string(message.signedSweepTx);
+    if (message.btcOracleAddress !== "") {
+      writer.uint32(34).string(message.btcOracleAddress);
     }
     return writer;
   },
-  decode(input: _m0.Reader | Uint8Array, length?: number): MsgBroadcastRefund {
+  decode(input: _m0.Reader | Uint8Array, length?: number): MsgSignSweep {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseMsgBroadcastRefund();
+    const message = createBaseMsgSignSweep();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
-          message.creator = reader.string();
+          message.reserveAddress = reader.string();
           break;
         case 2:
-          message.judgeAddress = reader.string();
+          message.signerAddress = reader.string();
           break;
         case 3:
-          message.signedRefundTx = reader.string();
+          message.sweepSignature = reader.string();
           break;
         case 4:
-          message.signedSweepTx = reader.string();
+          message.btcOracleAddress = reader.string();
           break;
         default:
           reader.skipType(tag & 7);
@@ -1383,42 +1256,42 @@ export const MsgBroadcastRefund = {
     }
     return message;
   },
-  fromJSON(object: any): MsgBroadcastRefund {
+  fromJSON(object: any): MsgSignSweep {
     return {
-      creator: isSet(object.creator) ? String(object.creator) : "",
-      judgeAddress: isSet(object.judgeAddress) ? String(object.judgeAddress) : "",
-      signedRefundTx: isSet(object.signedRefundTx) ? String(object.signedRefundTx) : "",
-      signedSweepTx: isSet(object.signedSweepTx) ? String(object.signedSweepTx) : ""
+      reserveAddress: isSet(object.reserveAddress) ? String(object.reserveAddress) : "",
+      signerAddress: isSet(object.signerAddress) ? String(object.signerAddress) : "",
+      sweepSignature: isSet(object.sweepSignature) ? String(object.sweepSignature) : "",
+      btcOracleAddress: isSet(object.btcOracleAddress) ? String(object.btcOracleAddress) : ""
     };
   },
-  toJSON(message: MsgBroadcastRefund): unknown {
+  toJSON(message: MsgSignSweep): unknown {
     const obj: any = {};
-    message.creator !== undefined && (obj.creator = message.creator);
-    message.judgeAddress !== undefined && (obj.judgeAddress = message.judgeAddress);
-    message.signedRefundTx !== undefined && (obj.signedRefundTx = message.signedRefundTx);
-    message.signedSweepTx !== undefined && (obj.signedSweepTx = message.signedSweepTx);
+    message.reserveAddress !== undefined && (obj.reserveAddress = message.reserveAddress);
+    message.signerAddress !== undefined && (obj.signerAddress = message.signerAddress);
+    message.sweepSignature !== undefined && (obj.sweepSignature = message.sweepSignature);
+    message.btcOracleAddress !== undefined && (obj.btcOracleAddress = message.btcOracleAddress);
     return obj;
   },
-  fromPartial(object: DeepPartial<MsgBroadcastRefund>): MsgBroadcastRefund {
-    const message = createBaseMsgBroadcastRefund();
-    message.creator = object.creator ?? "";
-    message.judgeAddress = object.judgeAddress ?? "";
-    message.signedRefundTx = object.signedRefundTx ?? "";
-    message.signedSweepTx = object.signedSweepTx ?? "";
+  fromPartial(object: DeepPartial<MsgSignSweep>): MsgSignSweep {
+    const message = createBaseMsgSignSweep();
+    message.reserveAddress = object.reserveAddress ?? "";
+    message.signerAddress = object.signerAddress ?? "";
+    message.sweepSignature = object.sweepSignature ?? "";
+    message.btcOracleAddress = object.btcOracleAddress ?? "";
     return message;
   }
 };
-function createBaseMsgBroadcastRefundResponse(): MsgBroadcastRefundResponse {
+function createBaseMsgSignSweepResponse(): MsgSignSweepResponse {
   return {};
 }
-export const MsgBroadcastRefundResponse = {
-  encode(_: MsgBroadcastRefundResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+export const MsgSignSweepResponse = {
+  encode(_: MsgSignSweepResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     return writer;
   },
-  decode(input: _m0.Reader | Uint8Array, length?: number): MsgBroadcastRefundResponse {
+  decode(input: _m0.Reader | Uint8Array, length?: number): MsgSignSweepResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseMsgBroadcastRefundResponse();
+    const message = createBaseMsgSignSweepResponse();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -1429,15 +1302,309 @@ export const MsgBroadcastRefundResponse = {
     }
     return message;
   },
-  fromJSON(_: any): MsgBroadcastRefundResponse {
+  fromJSON(_: any): MsgSignSweepResponse {
     return {};
   },
-  toJSON(_: MsgBroadcastRefundResponse): unknown {
+  toJSON(_: MsgSignSweepResponse): unknown {
     const obj: any = {};
     return obj;
   },
-  fromPartial(_: DeepPartial<MsgBroadcastRefundResponse>): MsgBroadcastRefundResponse {
-    const message = createBaseMsgBroadcastRefundResponse();
+  fromPartial(_: DeepPartial<MsgSignSweepResponse>): MsgSignSweepResponse {
+    const message = createBaseMsgSignSweepResponse();
+    return message;
+  }
+};
+function createBaseMsgBroadcastTxSweep(): MsgBroadcastTxSweep {
+  return {
+    signedRefundTx: "",
+    signedSweepTx: "",
+    judgeAddress: ""
+  };
+}
+export const MsgBroadcastTxSweep = {
+  encode(message: MsgBroadcastTxSweep, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.signedRefundTx !== "") {
+      writer.uint32(10).string(message.signedRefundTx);
+    }
+    if (message.signedSweepTx !== "") {
+      writer.uint32(18).string(message.signedSweepTx);
+    }
+    if (message.judgeAddress !== "") {
+      writer.uint32(26).string(message.judgeAddress);
+    }
+    return writer;
+  },
+  decode(input: _m0.Reader | Uint8Array, length?: number): MsgBroadcastTxSweep {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseMsgBroadcastTxSweep();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          message.signedRefundTx = reader.string();
+          break;
+        case 2:
+          message.signedSweepTx = reader.string();
+          break;
+        case 3:
+          message.judgeAddress = reader.string();
+          break;
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+  fromJSON(object: any): MsgBroadcastTxSweep {
+    return {
+      signedRefundTx: isSet(object.signedRefundTx) ? String(object.signedRefundTx) : "",
+      signedSweepTx: isSet(object.signedSweepTx) ? String(object.signedSweepTx) : "",
+      judgeAddress: isSet(object.judgeAddress) ? String(object.judgeAddress) : ""
+    };
+  },
+  toJSON(message: MsgBroadcastTxSweep): unknown {
+    const obj: any = {};
+    message.signedRefundTx !== undefined && (obj.signedRefundTx = message.signedRefundTx);
+    message.signedSweepTx !== undefined && (obj.signedSweepTx = message.signedSweepTx);
+    message.judgeAddress !== undefined && (obj.judgeAddress = message.judgeAddress);
+    return obj;
+  },
+  fromPartial(object: DeepPartial<MsgBroadcastTxSweep>): MsgBroadcastTxSweep {
+    const message = createBaseMsgBroadcastTxSweep();
+    message.signedRefundTx = object.signedRefundTx ?? "";
+    message.signedSweepTx = object.signedSweepTx ?? "";
+    message.judgeAddress = object.judgeAddress ?? "";
+    return message;
+  }
+};
+function createBaseMsgBroadcastTxSweepResponse(): MsgBroadcastTxSweepResponse {
+  return {};
+}
+export const MsgBroadcastTxSweepResponse = {
+  encode(_: MsgBroadcastTxSweepResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    return writer;
+  },
+  decode(input: _m0.Reader | Uint8Array, length?: number): MsgBroadcastTxSweepResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseMsgBroadcastTxSweepResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+  fromJSON(_: any): MsgBroadcastTxSweepResponse {
+    return {};
+  },
+  toJSON(_: MsgBroadcastTxSweepResponse): unknown {
+    const obj: any = {};
+    return obj;
+  },
+  fromPartial(_: DeepPartial<MsgBroadcastTxSweepResponse>): MsgBroadcastTxSweepResponse {
+    const message = createBaseMsgBroadcastTxSweepResponse();
+    return message;
+  }
+};
+function createBaseMsgProposeRefundHash(): MsgProposeRefundHash {
+  return {
+    refundHash: "",
+    judgeAddress: ""
+  };
+}
+export const MsgProposeRefundHash = {
+  encode(message: MsgProposeRefundHash, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.refundHash !== "") {
+      writer.uint32(10).string(message.refundHash);
+    }
+    if (message.judgeAddress !== "") {
+      writer.uint32(18).string(message.judgeAddress);
+    }
+    return writer;
+  },
+  decode(input: _m0.Reader | Uint8Array, length?: number): MsgProposeRefundHash {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseMsgProposeRefundHash();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          message.refundHash = reader.string();
+          break;
+        case 2:
+          message.judgeAddress = reader.string();
+          break;
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+  fromJSON(object: any): MsgProposeRefundHash {
+    return {
+      refundHash: isSet(object.refundHash) ? String(object.refundHash) : "",
+      judgeAddress: isSet(object.judgeAddress) ? String(object.judgeAddress) : ""
+    };
+  },
+  toJSON(message: MsgProposeRefundHash): unknown {
+    const obj: any = {};
+    message.refundHash !== undefined && (obj.refundHash = message.refundHash);
+    message.judgeAddress !== undefined && (obj.judgeAddress = message.judgeAddress);
+    return obj;
+  },
+  fromPartial(object: DeepPartial<MsgProposeRefundHash>): MsgProposeRefundHash {
+    const message = createBaseMsgProposeRefundHash();
+    message.refundHash = object.refundHash ?? "";
+    message.judgeAddress = object.judgeAddress ?? "";
+    return message;
+  }
+};
+function createBaseMsgProposeRefundHashResponse(): MsgProposeRefundHashResponse {
+  return {};
+}
+export const MsgProposeRefundHashResponse = {
+  encode(_: MsgProposeRefundHashResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    return writer;
+  },
+  decode(input: _m0.Reader | Uint8Array, length?: number): MsgProposeRefundHashResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseMsgProposeRefundHashResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+  fromJSON(_: any): MsgProposeRefundHashResponse {
+    return {};
+  },
+  toJSON(_: MsgProposeRefundHashResponse): unknown {
+    const obj: any = {};
+    return obj;
+  },
+  fromPartial(_: DeepPartial<MsgProposeRefundHashResponse>): MsgProposeRefundHashResponse {
+    const message = createBaseMsgProposeRefundHashResponse();
+    return message;
+  }
+};
+function createBaseMsgConfirmBtcWithdraw(): MsgConfirmBtcWithdraw {
+  return {
+    txHash: "",
+    height: Long.UZERO,
+    hash: "",
+    judgeAddress: ""
+  };
+}
+export const MsgConfirmBtcWithdraw = {
+  encode(message: MsgConfirmBtcWithdraw, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.txHash !== "") {
+      writer.uint32(10).string(message.txHash);
+    }
+    if (!message.height.isZero()) {
+      writer.uint32(16).uint64(message.height);
+    }
+    if (message.hash !== "") {
+      writer.uint32(26).string(message.hash);
+    }
+    if (message.judgeAddress !== "") {
+      writer.uint32(34).string(message.judgeAddress);
+    }
+    return writer;
+  },
+  decode(input: _m0.Reader | Uint8Array, length?: number): MsgConfirmBtcWithdraw {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseMsgConfirmBtcWithdraw();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          message.txHash = reader.string();
+          break;
+        case 2:
+          message.height = (reader.uint64() as Long);
+          break;
+        case 3:
+          message.hash = reader.string();
+          break;
+        case 4:
+          message.judgeAddress = reader.string();
+          break;
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+  fromJSON(object: any): MsgConfirmBtcWithdraw {
+    return {
+      txHash: isSet(object.txHash) ? String(object.txHash) : "",
+      height: isSet(object.height) ? Long.fromValue(object.height) : Long.UZERO,
+      hash: isSet(object.hash) ? String(object.hash) : "",
+      judgeAddress: isSet(object.judgeAddress) ? String(object.judgeAddress) : ""
+    };
+  },
+  toJSON(message: MsgConfirmBtcWithdraw): unknown {
+    const obj: any = {};
+    message.txHash !== undefined && (obj.txHash = message.txHash);
+    message.height !== undefined && (obj.height = (message.height || Long.UZERO).toString());
+    message.hash !== undefined && (obj.hash = message.hash);
+    message.judgeAddress !== undefined && (obj.judgeAddress = message.judgeAddress);
+    return obj;
+  },
+  fromPartial(object: DeepPartial<MsgConfirmBtcWithdraw>): MsgConfirmBtcWithdraw {
+    const message = createBaseMsgConfirmBtcWithdraw();
+    message.txHash = object.txHash ?? "";
+    message.height = object.height !== undefined && object.height !== null ? Long.fromValue(object.height) : Long.UZERO;
+    message.hash = object.hash ?? "";
+    message.judgeAddress = object.judgeAddress ?? "";
+    return message;
+  }
+};
+function createBaseMsgConfirmBtcWithdrawResponse(): MsgConfirmBtcWithdrawResponse {
+  return {};
+}
+export const MsgConfirmBtcWithdrawResponse = {
+  encode(_: MsgConfirmBtcWithdrawResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    return writer;
+  },
+  decode(input: _m0.Reader | Uint8Array, length?: number): MsgConfirmBtcWithdrawResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseMsgConfirmBtcWithdrawResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+  fromJSON(_: any): MsgConfirmBtcWithdrawResponse {
+    return {};
+  },
+  toJSON(_: MsgConfirmBtcWithdrawResponse): unknown {
+    const obj: any = {};
+    return obj;
+  },
+  fromPartial(_: DeepPartial<MsgConfirmBtcWithdrawResponse>): MsgConfirmBtcWithdrawResponse {
+    const message = createBaseMsgConfirmBtcWithdrawResponse();
     return message;
   }
 };

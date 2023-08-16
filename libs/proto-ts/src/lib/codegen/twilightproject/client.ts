@@ -3,13 +3,16 @@ import { defaultRegistryTypes, AminoTypes, SigningStargateClient } from "@cosmjs
 import { HttpEndpoint } from "@cosmjs/tendermint-rpc";
 import * as nyksBridgeTxRegistry from "../nyks/bridge/tx.registry";
 import * as nyksForksTxRegistry from "../nyks/forks/tx.registry";
+import * as nyksZkosTxRegistry from "../nyks/zkos/tx.registry";
 import * as nyksBridgeTxAmino from "../nyks/bridge/tx.amino";
 import * as nyksForksTxAmino from "../nyks/forks/tx.amino";
+import * as nyksZkosTxAmino from "../nyks/zkos/tx.amino";
 export const twilightprojectAminoConverters = {
   ...nyksBridgeTxAmino.AminoConverter,
-  ...nyksForksTxAmino.AminoConverter
+  ...nyksForksTxAmino.AminoConverter,
+  ...nyksZkosTxAmino.AminoConverter
 };
-export const twilightprojectProtoRegistry: ReadonlyArray<[string, GeneratedType]> = [...nyksBridgeTxRegistry.registry, ...nyksForksTxRegistry.registry];
+export const twilightprojectProtoRegistry: ReadonlyArray<[string, GeneratedType]> = [...nyksBridgeTxRegistry.registry, ...nyksForksTxRegistry.registry, ...nyksZkosTxRegistry.registry];
 export const getSigningTwilightprojectClientOptions = ({
   defaultTypes = defaultRegistryTypes
 }: {
