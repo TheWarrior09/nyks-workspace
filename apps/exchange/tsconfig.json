@@ -19,15 +19,7 @@
     ],
     "types": ["jest", "node"]
   },
-  "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    "**/*.js",
-    "**/*.jsx",
-    "../../apps/exchange/.next/types/**/*.ts",
-    "../../dist/apps/exchange/.next/types/**/*.ts",
-    "next-env.d.ts"
-  ],
+  "include": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "next-env.d.ts", "pages/wallet.tss"],
   "exclude": [
     "node_modules",
     "jest.config.ts",

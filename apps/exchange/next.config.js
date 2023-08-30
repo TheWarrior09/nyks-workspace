@@ -17,6 +17,10 @@ const nextConfig = {
     // For other options, see https://nextjs.org/docs/architecture/nextjs-compiler#emotion
     emotion: true,
   },
+  webpack: function (config, { isServer }) {
+    config.experiments = { asyncWebAssembly: true, layers: true };
+    return config;
+  },
 };
 
 const plugins = [
