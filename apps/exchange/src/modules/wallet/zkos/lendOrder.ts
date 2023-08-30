@@ -92,7 +92,7 @@ function base64ToUint8Array(base64: string) {
 // }) {
 //   // const amount  = 100
 
-//   const quisquis = await import('@nyks-workspace/quisquis-wallet');
+//   const quisquis = await import('zkos-wasm');
 
 //   const publicKey = quisquis.generatePublicKeyFromSignatureString(signature);
 
@@ -167,9 +167,9 @@ function base64ToUint8Array(base64: string) {
 // }
 
 async function queryZkOSLendOrder({ signature }: { signature: string }) {
-  const quisquis = await import('@nyks-workspace/quisquis-wallet');
+  const quisquis = await import('zkos-wasm');
 
-  const publicKey = quisquis.generatePublicKeyFromSignatureString(signature);
+  const publicKey = quisquis.generatePublicKeyFromStringSignature(signature);
 
   const tradingQuisquisAccount = quisquis.generateChainTradingAccount(
     publicKey,
