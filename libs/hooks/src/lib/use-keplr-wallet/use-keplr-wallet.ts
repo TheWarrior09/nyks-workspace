@@ -9,7 +9,7 @@ declare global {
   interface Window extends KeplrWindow {}
 }
 
-const getKeplr = () => {
+export const getKeplr = () => {
   if (typeof window.keplr !== 'undefined') return window.keplr;
   throw new Error('window.keplr is not defined');
 };
@@ -24,15 +24,15 @@ const getAccounts = (chainId: string) => {
   return offlineSigner.getAccounts();
 };
 
-export const signArbitraryMessage = async (
+export async function signArbitraryMessage(
   chainID: string,
   signerAddress: string,
   msg: string
-) => {
+) {
   const keplr = getKeplr();
   const signature = await keplr.signArbitrary(chainID, signerAddress, msg);
   return signature;
-};
+}
 
 const getAllBalances = async (chainId: string, tendermintRpc: string) => {
   const offlineSigner = getOfflineSigner(chainId);
@@ -187,7 +187,7 @@ const getTestnetChainInfo = (
       coinDenom: 'sats',
       coinMinimalDenom: 'sats',
       coinDecimals: 0,
-      coinGeckoId: 'bitcoin',
+      // coinGeckoId: 'bitcoin',
     },
   ],
   feeCurrencies: [
