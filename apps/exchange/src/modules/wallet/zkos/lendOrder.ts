@@ -6,9 +6,9 @@ export async function generateZkOSLendOrder({
   amount: number;
 }) {
   // const amount  = 100
-  const quisquis = await import('@nyks-workspace/quisquis-wallet');
+  const quisquis = await import('zkos-wasm');
 
-  const publicKey = quisquis.generatePublicKeyFromSignatureString(signature);
+  const publicKey = quisquis.generatePublicKeyFromStringSignature(signature);
 
   const tradingQuisquisAccount = quisquis.generateChainTradingAccount(
     publicKey,
