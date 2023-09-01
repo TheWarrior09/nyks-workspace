@@ -3,14 +3,11 @@ import {
   useTwilightRpcWithCosmjs,
 } from '@nyks-workspace/hooks';
 import { CHAIN_ID, TENDERMINT_RPC, COSMOS_REST } from '../../../../constants';
-import {
-  generatePublicKey,
-  getNewTradingAccount,
-  saveAccountInLocalStorage,
-} from '../zkos';
+import { generatePublicKey, getNewTradingAccount } from '../zkos';
 import Long from 'long';
 import { getTradingAccountDetails } from '../zkos/tradingAccount';
 import { useGlobalContext } from '../../../context';
+import { useQueryMintBurnTradingBtc } from './useQueryMintBurnTradingBtc';
 
 interface UserBroadcastTransaction {
   amount: number;
@@ -24,6 +21,10 @@ function useBroadcastMintTransaction({ amount }: UserBroadcastTransaction) {
   });
 
   const twilightAddress = getAccountsQuery.data?.[0].address;
+
+  const tradingBtcAccounts = useQueryMintBurnTradingBtc({
+    twilightAddress,
+  });
 
   const { mintBurnTradingBtc } = useTwilightRpcWithCosmjs();
 
@@ -51,12 +52,7 @@ function useBroadcastMintTransaction({ amount }: UserBroadcastTransaction) {
       {
         onSuccess: (data) => {
           if (data.code === 0) {
-            saveAccountInLocalStorage({
-              amount,
-              tradingAccount: chainTradingAccount,
-              encryptScalar: encryptScalarHex,
-              zkosAccount: tradingAccountHex,
-            });
+            tradingBtcAccounts.refetch();
           }
         },
       }

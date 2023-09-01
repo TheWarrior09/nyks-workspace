@@ -4,6 +4,7 @@ import {
   getUtxoOutput,
 } from './tradeOrder';
 import {
+  base64ToUint8Array,
   getUtxoHex,
   getZkosHexAddress,
   verifyDarkTx,
@@ -73,7 +74,7 @@ export async function darkTransaction({
 
   const darkTx = zkos.createDarkTransferTransaction(
     convertToJsonString(transactionVector),
-    convertToJsonString([signature]),
+    base64ToUint8Array(signature),
     convertToJsonString(senderBalanceVector),
     convertToJsonString(receiverBalanceVector)
   );

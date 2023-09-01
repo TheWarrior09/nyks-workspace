@@ -49,7 +49,9 @@ function TradingToDarkTxModal({
     const publicKey = await generatePublicKey({ signature });
     const receiverAddress = await generateRandomReceiverAddress({ publicKey });
 
-    setToAccount(JSON.parse(receiverAddress));
+    console.log('receiverAddress', receiverAddress);
+
+    setToAccount(receiverAddress);
   };
 
   return (
