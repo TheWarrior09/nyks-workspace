@@ -123,6 +123,7 @@ async function getAccountValue({
 }
 
 export {
+  base64ToUint8Array,
   generatePublicKey,
   generateHexAddress,
   getNewTradingAccount,
