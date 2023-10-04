@@ -9,17 +9,19 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
-import { useState } from 'react';
-import Long from 'long';
-
+import { useEffect, useState } from 'react';
 import { useGlobalContext } from '../../../context';
 import {
-  MintBurnTradingBtc,
-  useQueryMintBurnTradingBtc,
-} from '../hooks/useQueryMintBurnTradingBtc';
-import { useTwilightRpcWithCosmjs } from '@nyks-workspace/hooks';
-import { getAccountValue } from '../zkos/accountManagement';
-import TradingToDarkTxModal from './TradingToDarkTxModal';
+  AccountLocal,
+  getAccountList,
+  getUtxoFromDB,
+  updateAccountValueInLocalData,
+} from '../zkos';
+import {
+  getAddressOutput,
+  getAddressUtxoHex,
+  getAddressValue,
+} from '../zkos/darkTransaction';
 
 interface CustomTableCellProps {
   children: React.ReactNode;
@@ -39,7 +41,7 @@ const CustomTableCell = ({
   );
 };
 
-function truncate(str: string, n: number) {
+export function truncate(str: string, n: number) {
   if (str.length <= n) {
     return str;
   }
@@ -53,69 +55,28 @@ function TradingAccountList({
   twilightAddress: string;
 }): JSX.Element {
   const [selectedRow, setSelectedRow] = useState<{
-    amount: number;
-    account: string;
-  }>({ account: '', amount: 0 });
-  const [btcBalances, setBtcBalances] = useState<{
-    [accountId: string]: number | null;
-  }>({});
-  const [selectedTransferDialog, setSelectedTransferDialog] = useState(false);
+    amount: number | undefined;
+    address: string;
+  }>({ address: '', amount: undefined });
 
-  const { setEncryptScalar, setQqAccount, setAmount, signature } =
+  const { setEncryptScalar, setTradingAccount, setAmount, signature } =
     useGlobalContext();
-
-  const { mintBurnTradingBtc } = useTwilightRpcWithCosmjs();
 
   if (!signature) throw new Error('signature not found');
 
-  const handleCloseTransferDialog = () => {
-    setSelectedTransferDialog(false);
-  };
 
-  function handleRowClick(row: MintBurnTradingBtc) {
+  function handleRowClick(row: AccountLocal) {
+    if (row.status === 'spent') return;
     setEncryptScalar(row.encryptScalar);
-    setQqAccount(row.qqAccount);
-    setAmount(`${row.btcValue}`);
-    setSelectedRow({ account: row.qqAccount, amount: Number(row.btcValue) });
+    setTradingAccount(row.tradingAccount);
+    setSelectedRow((prev) => ({
+      ...prev,
+      address: row.tradingAddress,
+      amount: Number(row.btcValue),
+    }));
   }
 
-  function handleTradingToFundingTransfer({
-    btcValue,
-    encryptScalar,
-    qqAccount,
-    twilightAddress,
-  }: {
-    btcValue: string;
-    encryptScalar: string;
-    qqAccount: string;
-    twilightAddress: string;
-  }) {
-    mintBurnTradingBtc.mutate(
-      {
-        btcValue: Long.fromString(btcValue),
-        encryptScalar: encryptScalar,
-        mintOrBurn: false,
-        qqAccount: qqAccount,
-        twilightAddress: twilightAddress,
-      },
-      {
-        onSuccess() {
-          tradingBtcAccounts.refetch();
-        },
-      }
-    );
-  }
-
-  const tradingBtcAccounts = useQueryMintBurnTradingBtc({
-    twilightAddress,
-  });
-
-  if (
-    tradingBtcAccounts.status === 'loading' &&
-    tradingBtcAccounts.fetchStatus === 'idle'
-  ) {
-    return <>loading...</>;
-  }
+  const tradingAccountData = getAccountList(twilightAddress);
 
   return (
     <TableContainer
@@ -133,114 +94,80 @@ function TradingAccountList({
         <TableHead>
           <TableRow>
             <CustomTableCell align="center">Index</CustomTableCell>
-            <CustomTableCell align="center">Account</CustomTableCell>
-            <CustomTableCell align="center">Encryption</CustomTableCell>
+            <CustomTableCell align="center">Address</CustomTableCell>
+            {/* <CustomTableCell align="center">Encrypt Scalar</CustomTableCell> */}
             <CustomTableCell align="center">Value</CustomTableCell>
+            <CustomTableCell align="center">Status</CustomTableCell>
             <CustomTableCell align="center">Selected</CustomTableCell>
-            <CustomTableCell align="center">Transfer</CustomTableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {tradingBtcAccounts.status === 'success' &&
-            tradingBtcAccounts.data.MintOrBurnTradingBtc.filter(
-              (item) => item.mintOrBurn === true
-            ).map((row, index) => (
-              <TableRow
-                key={row.qqAccount}
-                sx={{
-                  '&:last-child td, &:last-child th': { border: 0 },
-                  backgroundColor:
-                    index % 2 === 0 ? 'action.hover' : 'background.paper',
-                  '&:hover': {
-                    backgroundColor: 'action.selected',
-                  },
-                }}
-                onClick={() => handleRowClick(row)}
-                selected={selectedRow.account === row.qqAccount}
-                hover
-              >
-                <CustomTableCell align="center">{index + 1}</CustomTableCell>
+          {tradingAccountData.map((row, index) => (
+            <TableRow
+              key={row.tradingAddress}
+              sx={{
+                '&:last-child td, &:last-child th': { border: 0 },
+                backgroundColor:
+                  index % 2 === 0 ? 'action.hover' : 'background.paper',
+                '&:hover': {
+                  backgroundColor: 'action.selected',
+                },
+              }}
+              onClick={() => handleRowClick(row)}
+              selected={selectedRow.address === row.tradingAddress}
+              hover
+            >
+              <CustomTableCell align="center">{index + 1}</CustomTableCell>
 
-                <CustomTableCell align="center">
-                  {truncate(row.qqAccount, 20)}
-                </CustomTableCell>
+              <CustomTableCell align="center">
+                {truncate(row.tradingAddress, 20)}
+              </CustomTableCell>
 
-                <CustomTableCell align="center">
+              {/* <CustomTableCell align="center">
                   {truncate(row.encryptScalar, 20)}
-                </CustomTableCell>
+                </CustomTableCell> */}
 
-                <CustomTableCell align="center">
-                  {/* {row.btcValue} sats */}
-                  {btcBalances[row.qqAccount] ? (
-                    `${btcBalances[row.qqAccount]} sats`
-                  ) : (
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      onClick={async () => {
-                        const balance = await getAccountValue({
-                          signature,
-                          qqAccount: row.qqAccount,
-                          encryptScalar: row.encryptScalar,
-                        });
+              <CustomTableCell align="center">
+                {/* {row.btcValue} sats */}
+                {typeof row.btcValue !== 'undefined' ? (
+                  `${row.btcValue} sats`
+                ) : (
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={async () => {
+                      const balance = await getAddressValue(
+                        signature,
+                        row.tradingAddress
+                      );
 
-                        setBtcBalances((prevClickedValues) => ({
-                          ...prevClickedValues,
-                          [row.qqAccount]: Number(balance.balance),
-                        }));
-                      }}
-                    >
-                      Decrypt
-                    </Button>
-                  )}
-                </CustomTableCell>
+                      updateAccountValueInLocalData({
+                        tradingAddress: row.tradingAddress,
+                        twilightAddress,
+                        updatedValue: Number(balance),
+                      });
 
-                <CustomTableCell align="center">
-                  <Checkbox checked={selectedRow.account === row.qqAccount} />
-                </CustomTableCell>
+                      setSelectedRow((prev) => ({
+                        ...prev,
+                        amount: Number(balance),
+                      }));
+                    }}
+                  >
+                    Decrypt
+                  </Button>
+                )}
+              </CustomTableCell>
 
-                <CustomTableCell align="center">
-                  <>
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      onClick={() => {
-                        handleTradingToFundingTransfer({
-                          btcValue: row.btcValue,
-                          encryptScalar: row.encryptScalar,
-                          qqAccount: row.qqAccount,
-                          twilightAddress: row.twilightAddress,
-                        });
-                      }}
-                      disabled={mintBurnTradingBtc.status === 'loading'}
-                    >
-                      Trading to funding
-                    </Button>
+              <CustomTableCell align="center">{row.status}</CustomTableCell>
 
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      onClick={() => {
-                        console.log('dark tx');
-                        setSelectedTransferDialog(true);
-                      }}
-                      //   disabled={mintBurnTradingBtc.status === 'loading'}
-                    >
-                      Dark tx
-                    </Button>
-                  </>
-                </CustomTableCell>
-              </TableRow>
-            ))}
-
-          {selectedRow.account && selectedTransferDialog ? (
-            <TradingToDarkTxModal
-              fromAccount={selectedRow.account}
-              onClose={handleCloseTransferDialog}
-              open={selectedTransferDialog}
-              totalAmount={selectedRow.amount}
-            />
-          ) : null}
+              <CustomTableCell align="center">
+                <Checkbox
+                  disabled={row.status === 'spent'}
+                  checked={selectedRow.address === row.tradingAddress}
+                />
+              </CustomTableCell>
+            </TableRow>
+          ))}
         </TableBody>
       </Table>
     </TableContainer>
