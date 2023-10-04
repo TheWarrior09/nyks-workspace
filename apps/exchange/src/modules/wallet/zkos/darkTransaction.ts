@@ -2,7 +2,7 @@ import {
   commitDarkTransaction,
   getUtxoForAddress,
   getUtxoOutput,
-} from './tradeOrder';
+} from './zkosApi';
 import {
   getUtxoHex,
   verifyDarkTx,
@@ -116,6 +116,16 @@ export async function darkTransaction({
       height: 0,
     }))
   );
+
+  const receiverAddressOutput = await getAddressOutput(toAddress);
+  console.log('receiverAddressOutput', receiverAddressOutput);
+
+  const toAddressValue = await getAddressValue(signature, toAddress);
+  console.log('toAddress value', toAddressValue);
+
+  const fromAddressValue = await getAddressValue(signature, fromAddress);
+  console.log('fromAddress value', fromAddressValue);
+}
 
 export async function darkTransactionSingle({
   amountSend,
@@ -262,3 +272,13 @@ export const getAddressValue = async (signature: string, address: string) => {
 
   return value;
 };
+
+// Can you explain in more detail how Quisquis addresses the privacy issues in existing cryptocurrencies?
+
+// How does Quisquis ensure theft prevention and maintain anonymity in transactions?
+
+// What are the limitations of the Quisquis design?
+
+// Can you provide more information about the updatable keys and zero-knowledge arguments used in Quisquis?
+
+// Are there any other notable proposals or designs for anonymous cryptocurrencies besides Quisquis?
