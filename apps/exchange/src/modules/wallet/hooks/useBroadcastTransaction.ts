@@ -11,6 +11,8 @@ import {
 import Long from 'long';
 import { getTradingAccountDetails } from '../zkos/tradingAccount';
 import { useGlobalContext } from '../../../context';
+import { useMutation } from '@tanstack/react-query';
+import { darkTransactionSingle } from '../zkos/darkTransaction';
 
 interface UserBroadcastTransaction {
   amount: number;
@@ -67,5 +69,11 @@ function useBroadcastMintTransaction({ amount }: UserBroadcastTransaction) {
 
   return { handleMintTradingBtc, status: mintBurnTradingBtc.status };
 }
+
+export const useBroadcastDarkTransactionSingle = () => {
+  return useMutation({
+    mutationFn: darkTransactionSingle,
+  });
+};
 
 export { useBroadcastMintTransaction };
