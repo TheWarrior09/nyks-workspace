@@ -13,10 +13,31 @@ import {
   DialogActions,
   Button,
   SelectChangeEvent,
+  Box,
+  FormLabel,
+  FormControlLabel,
+  RadioGroup,
+  Radio,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import { ChangeEvent, useState } from 'react';
-import { useBroadcastMintTransaction } from '../hooks/useBroadcastTransaction';
+import { ChangeEvent, useEffect, useState } from 'react';
+import {
+  AccountLocal,
+  AddNewAccountInLocalData,
+  getAccountList,
+  getTradingAccountDetails,
+} from '../zkos/tradingAccount';
+import { useGlobalContext } from '../../../context';
+import {
+  generateNewFundingAccount,
+  generatePublicKey,
+  generateRandomTradingAddress,
+  getTradingHexAddressFromAccountHex,
+} from '../zkos';
+import { useTwilightRpcWithCosmjs } from '@nyks-workspace/hooks';
+import Long from 'long';
+import { truncate } from './TradingAccountList';
+import { useBroadcastDarkTransactionSingle } from '../hooks/useBroadcastTransaction';
 // import { createTraderOrder, getZkosAccount } from '../zkos';
 // import {
 //   createCancelTraderOrder,
@@ -31,38 +52,273 @@ import { useBroadcastMintTransaction } from '../hooks/useBroadcastTransaction';
 interface FundingToTradingModal {
   open: boolean;
   onClose: () => void;
+  twilightAddress: string;
 }
 
-function FundingToTradingModal({ onClose, open }: FundingToTradingModal) {
-  const [fundingTransferFrom, setFundingTransferFrom] = useState('funding');
-  const [fundingTransferTo, setFundingTransferTo] = useState('trading');
-  const [fundingWithdrawCoin, setFundingWithdrawCoin] = useState('btc');
-  const [amount, setAmount] = useState('');
+function FundingToTradingModal({
+  onClose,
+  open,
+  twilightAddress,
+}: FundingToTradingModal) {
+  const [transferFrom, setTransferFrom] = useState('funding');
+  const [transferTo, setTransferTo] = useState('trading');
+  const [amount, setAmount] = useState<number>();
 
-  const { handleMintTradingBtc, status } = useBroadcastMintTransaction({
-    amount: Number(amount),
-  });
+  const [senderAddress, setSenderAddress] = useState<string>('');
+  const [receiverAddress, setReceiverAddress] = useState('');
 
-  const handleChangeFundingTransferFrom = (event: SelectChangeEvent) => {
-    setFundingTransferFrom(event.target.value);
+  const [toAddressType, setToAddressType] = useState<'address' | 'output'>(
+    'address'
+  );
+
+  const broadcastDarkTransactionSingle = useBroadcastDarkTransactionSingle();
+  const { mintBurnTradingBtc } = useTwilightRpcWithCosmjs();
+  const { signature } = useGlobalContext();
+  if (!signature) throw new Error('signature not found');
+
+  const handleChangeToAddressType = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setToAddressType(
+      (event.target as HTMLInputElement).value as 'address' | 'output'
+    );
   };
 
-  const handleChangeFundingTransferTo = (event: SelectChangeEvent) => {
-    setFundingTransferTo(event.target.value);
+  useEffect(() => {
+    setReceiverAddress('');
+  }, [toAddressType]);
+
+  const tradingAccountData = getAccountList(twilightAddress).reduce(
+    (accumulator: AccountLocal[], currentObject) => {
+      const isDuplicate = accumulator.some(
+        (obj) => obj.tradingAddress === currentObject.tradingAddress
+      );
+      if (!isDuplicate) {
+        if (Number(currentObject.btcValue) > 0) {
+          accumulator.push(currentObject);
+        }
+      }
+      return accumulator;
+    },
+    []
+  );
+
+  const handleToAccountChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setReceiverAddress(event.target.value);
   };
 
-  const handleChangeFundingWithdrawCoin = (event: SelectChangeEvent) => {
-    setFundingWithdrawCoin(event.target.value);
+  const handleChangeTypeTransferFrom = (event: SelectChangeEvent) => {
+    setTransferFrom(event.target.value);
+  };
+
+  const handleChangeTypeTransferTo = (event: SelectChangeEvent) => {
+    setTransferTo(event.target.value);
+  };
+
+  const handleChangeAddressTransferFrom = (event: SelectChangeEvent) => {
+    setSenderAddress(event.target.value);
   };
 
   const handleTransferAmount = (event: ChangeEvent<HTMLInputElement>) => {
-    setAmount(event.target.value);
+    setAmount(event.target.valueAsNumber);
   };
 
-  const handleSubmit = async () => {
-    await handleMintTradingBtc();
+  const handleOwnAccount = async () => {
+    const publicKey = await generatePublicKey({ signature });
+    const receiverAddress = await generateRandomTradingAddress({ publicKey });
+
+    setReceiverAddress(receiverAddress);
+  };
+
+  const handleTradingToTradingSubmit = async () => {
+    const senderBalance = tradingAccountData.find(
+      (item) => item.tradingAddress === senderAddress
+    )?.btcValue;
+
+    if (typeof senderBalance === 'undefined' || typeof amount === 'undefined')
+      return;
+
+    await broadcastDarkTransactionSingle.mutateAsync({
+      signature,
+      twilightAddress,
+      fromAddress: senderAddress,
+      toAddress: receiverAddress,
+      toAddressType: toAddressType,
+      amountAvailable: senderBalance,
+      amountSend: Number(amount),
+    });
+
     onClose();
   };
+
+  const handleFundingToTradingSubmit = async () => {
+    if (typeof amount === 'undefined') return;
+    const publicKey = await generatePublicKey({
+      signature,
+    });
+    const chainTradingAccount = await generateNewFundingAccount(
+      publicKey,
+      amount
+    );
+
+    const { encryptScalarHex, tradingAccountHex } =
+      getTradingAccountDetails(chainTradingAccount);
+
+    const hexAddress = await getTradingHexAddressFromAccountHex(
+      tradingAccountHex
+    );
+
+    await mintBurnTradingBtc.mutateAsync(
+      {
+        btcValue: Long.fromNumber(amount),
+        qqAccount: tradingAccountHex,
+        encryptScalar: encryptScalarHex,
+        mintOrBurn: true,
+        twilightAddress: twilightAddress ?? '',
+      },
+      {
+        onSuccess: (data) => {
+          if (data.code === 0) {
+            AddNewAccountInLocalData(
+              { twilightAddress: twilightAddress ?? '' },
+              [
+                {
+                  tradingAccount: tradingAccountHex,
+                  encryptScalar: encryptScalarHex,
+                  tradingAddress: hexAddress,
+                  btcValue: amount,
+                  transactionId: data.transactionHash,
+                  transactionType: 'fundingToTrading',
+                  height: data.height,
+                  status: 'unSpent',
+                },
+              ]
+            );
+          }
+        },
+      }
+    );
+
+    onClose();
+  };
+
+  const renderToAddressType = (
+    <FormControl>
+      <FormLabel id="demo-controlled-radio-buttons-group">
+        To Address Type:
+      </FormLabel>
+      <RadioGroup
+        row
+        aria-labelledby="demo-controlled-radio-buttons-group"
+        name="controlled-radio-buttons-group"
+        value={toAddressType}
+        onChange={handleChangeToAddressType}
+      >
+        <FormControlLabel value="address" control={<Radio />} label="Address" />
+        <FormControlLabel value="output" control={<Radio />} label="Output" />
+      </RadioGroup>
+    </FormControl>
+  );
+
+  const renderTradingToTradingTxInputs = (
+    <>
+      <FormControl fullWidth sx={{ my: 1, minWidth: 120 }}>
+        <InputLabel id="demo-simple-select-label">From Address</InputLabel>
+        <Select
+          labelId="demo-simple-select-label"
+          id="demo-simple-select"
+          value={senderAddress}
+          label="From Address"
+          onChange={handleChangeAddressTransferFrom}
+        >
+          {tradingAccountData.map((account) => (
+            <MenuItem
+              value={account.tradingAddress}
+              key={account.tradingAddress}
+            >
+              Address: {truncate(account.tradingAddress, 24)} - Balance:
+              {account.btcValue}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
+      {renderToAddressType}
+
+      <TextField
+        variant="outlined"
+        autoFocus
+        margin="dense"
+        autoComplete="off"
+        id="user-address"
+        name="user-address"
+        label={`${
+          toAddressType === 'address' ? 'To Address HEX' : 'Output HEX'
+        }`}
+        type="text"
+        placeholder={`${
+          toAddressType === 'address' ? 'Get new address' : 'Paste Output HEX'
+        }`}
+        inputProps={{
+          readOnly: toAddressType === 'address' ? true : false,
+        }}
+        value={receiverAddress}
+        onChange={handleToAccountChange}
+        fullWidth
+      />
+
+      {toAddressType === 'address' ? (
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'end',
+          }}
+        >
+          <Box sx={{ width: 200, my: 1 }}>
+            <Button
+              onClick={handleOwnAccount}
+              fullWidth
+              size="small"
+              variant="contained"
+            >
+              Generate new address
+            </Button>
+          </Box>
+        </Box>
+      ) : null}
+    </>
+  );
+
+  const renderTradingToTradingTxSubmitButton = (
+    <Button
+      onClick={handleTradingToTradingSubmit}
+      disabled={
+        typeof amount === 'undefined' ||
+        broadcastDarkTransactionSingle.status === 'loading'
+      }
+      fullWidth
+      variant="contained"
+    >
+      {broadcastDarkTransactionSingle.status === 'loading'
+        ? 'Broadcasting tx'
+        : 'Trading to Trading'}
+    </Button>
+  );
+
+  const renderFundingToTradingTxSubmitButton = (
+    <Button
+      onClick={handleFundingToTradingSubmit}
+      disabled={
+        typeof amount === 'undefined' || mintBurnTradingBtc.status === 'loading'
+      }
+      fullWidth
+      variant="contained"
+    >
+      {mintBurnTradingBtc.status === 'loading'
+        ? 'Broadcasting tx'
+        : 'Funding to Trading'}
+    </Button>
+  );
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth={'sm'}>
@@ -90,12 +346,11 @@ function FundingToTradingModal({ onClose, open }: FundingToTradingModal) {
                 <Select
                   labelId="demo-simple-select-label"
                   id="demo-simple-select"
-                  value={fundingTransferFrom}
-                  // value={'trading'}
+                  value={transferFrom}
                   label="From"
-                  onChange={handleChangeFundingTransferFrom}
+                  onChange={handleChangeTypeTransferFrom}
                 >
-                  {/* <MenuItem value={'trading'}>Trading</MenuItem> */}
+                  <MenuItem value={'trading'}>Trading</MenuItem>
                   <MenuItem value={'funding'}>Funding</MenuItem>
                 </Select>
               </FormControl>
@@ -106,30 +361,21 @@ function FundingToTradingModal({ onClose, open }: FundingToTradingModal) {
                 <Select
                   labelId="demo-simple-select-label"
                   id="demo-simple-select"
-                  value={fundingTransferTo}
-                  // value={'funding'}
+                  value={transferTo}
                   label="To"
-                  onChange={handleChangeFundingTransferTo}
+                  onChange={handleChangeTypeTransferTo}
                 >
                   <MenuItem value={'trading'}>Trading</MenuItem>
-                  {/* <MenuItem value={'funding'}>Funding</MenuItem> */}
+                  <MenuItem value={'funding'}>Funding</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
           </Grid>
+
+          {transferFrom === 'trading' && transferTo === 'trading'
+            ? renderTradingToTradingTxInputs
+            : null}
         </DialogContentText>
-        <FormControl fullWidth sx={{ my: 1, minWidth: 120 }}>
-          <InputLabel id="demo-simple-select-label">Coin</InputLabel>
-          <Select
-            labelId="demo-simple-select-label"
-            id="demo-simple-select"
-            value={fundingWithdrawCoin}
-            label="Coin"
-            onChange={handleChangeFundingWithdrawCoin}
-          >
-            <MenuItem value={'btc'}>BTC</MenuItem>
-          </Select>
-        </FormControl>
 
         <TextField
           variant="outlined"
@@ -142,18 +388,20 @@ function FundingToTradingModal({ onClose, open }: FundingToTradingModal) {
           onChange={handleTransferAmount}
           fullWidth
           autoComplete="off"
-          inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
+          inputProps={{
+            inputMode: 'numeric',
+            pattern: '[0-9]*',
+          }}
         />
       </DialogContent>
       <DialogActions disableSpacing={true} sx={{ px: 3, pb: 3 }}>
-        <Button
-          onClick={handleSubmit}
-          disabled={!amount || status === 'loading'}
-          fullWidth
-          variant="contained"
-        >
-          {status === 'loading' ? 'Broadcasting tx' : 'Confirm'}
-        </Button>
+        {transferFrom === 'funding' && transferTo === 'trading'
+          ? renderFundingToTradingTxSubmitButton
+          : null}
+
+        {transferFrom === 'trading' && transferTo === 'trading'
+          ? renderTradingToTradingTxSubmitButton
+          : null}
 
         {/* <Button onClick={handleTrade} fullWidth variant="contained">
           Trade
