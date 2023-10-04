@@ -1,36 +1,29 @@
-function base64ToUint8Array(base64: string) {
-  const binaryString = atob(base64);
-  const length = binaryString.length;
-  const uint8Array = new Uint8Array(length);
-
-  for (let i = 0; i < length; i++) {
-    uint8Array[i] = binaryString.charCodeAt(i);
-  }
-
-  return uint8Array;
-}
+import { getFundingAccountString } from './tradingAccount';
 
 async function generatePublicKey({ signature }: { signature: string }) {
   const zkos = await import('zkos-wasm');
-  const signatureArray = base64ToUint8Array(signature);
-  return zkos.generatePublicKeyFromSignature(signatureArray);
+  return zkos.generatePublicKeyFromSignature(signature);
 }
 
-async function generateHexAddress({ publicKey }: { publicKey: string }) {
+async function generatePublicKeyHexAddress({
+  publicKey,
+}: {
+  publicKey: string;
+}) {
   const zkos = await import('zkos-wasm');
   return zkos.hexStandardAddressFromPublicKey(12, publicKey);
 }
 
-async function generateZeroZkosAccount({
-  zkosAccountHex,
+async function generateZeroTradingAccountFromHexAddress({
+  tradingHexAddress,
 }: {
-  zkosAccountHex: string;
+  tradingHexAddress: string;
 }) {
   const zkos = await import('zkos-wasm');
-  return zkos.generateZeroZkosAccountFromAddress(zkosAccountHex);
+  return zkos.generateZeroTradingAccountFromAddress(tradingHexAddress);
 }
 
-async function generateRandomReceiverAddress({
+async function generateRandomTradingAddress({
   publicKey,
 }: {
   publicKey: string;
@@ -39,99 +32,130 @@ async function generateRandomReceiverAddress({
   return zkos.generateRandomAddress(publicKey);
 }
 
-async function getNewTradingAccount(publicKey: string, amount: number) {
+async function generateNewFundingAccount(publicKey: string, amount: number) {
   const zkos = await import('zkos-wasm');
-  const tradingQuisquisAccount = zkos.generateChainTradingAccount(
-    publicKey,
-    amount
-  );
-
-  return {
-    tradingQuisquisAccount,
-  };
+  return zkos.generateChainFundingTradingAccount(publicKey, amount);
 }
 
-function getTradingAccount({
-  encryptScalar,
-  qqAccount,
-}: {
-  qqAccount: string;
-  encryptScalar: string;
-}) {
-  const tradingAccount = JSON.stringify({
-    zkos_account_hex: qqAccount,
-    encrypt_scalar_hex: encryptScalar,
-  });
-
-  return tradingAccount;
+async function getTradingAccountFromFundingAccount(fundingAccount: string) {
+  const zkos = await import('zkos-wasm');
+  return zkos.fundingToTradingAccount(fundingAccount);
 }
 
-async function getZkosAccount(tradingQuisquisAccount: string) {
+async function getTradingHexAddressFromAccount(tradingAccount: string) {
   const zkos = await import('zkos-wasm');
-
-  const zkosAccount = zkos.fundingToZkosAccount(tradingQuisquisAccount);
-  const zkosHexAddress = zkos.getHexAddressFromZkosAccount(zkosAccount);
-
-  return {
-    zkosAccount,
-    zkosHexAddress,
-  };
+  return zkos.getHexAddressFromTradingAccount(tradingAccount);
 }
 
-async function getZkosHexAddress(zkosAccountHex: string) {
+async function getTradingHexAddressFromAccountHex(zkosAccountHex: string) {
   const zkos = await import('zkos-wasm');
-
-  const zkosHexAddress = zkos.getHexAddressFromZkosAccountHex(zkosAccountHex);
-
-  return zkosHexAddress;
+  return zkos.getHexAddressFromTradingAccountHex(zkosAccountHex);
 }
 
 async function getUtxoHex(utxo: string) {
   const zkos = await import('zkos-wasm');
-
-  const utxoHex = zkos.getUtxoHexFromJson(utxo);
-
-  return utxoHex;
+  return zkos.getUtxoHexFromJson(utxo);
 }
 
 async function verifyDarkTx(darkTx: string) {
   const zkos = await import('zkos-wasm');
-
-  const utxoHex = zkos.verifyQuisQuisTransaction(darkTx);
-
-  return utxoHex;
+  return zkos.verifyQuisQuisTransaction(darkTx);
 }
 
 async function getAccountValue({
   signature,
-  encryptScalar,
-  qqAccount,
+  encryptScalarHex,
+  tradingAccountHex,
 }: {
   signature: string;
-  encryptScalar: string;
-  qqAccount: string;
+  encryptScalarHex: string;
+  tradingAccountHex: string;
 }) {
   const zkos = await import('zkos-wasm');
-  const signatureArray = base64ToUint8Array(signature);
+  const fundingAccount = getFundingAccountString({
+    encryptScalarHex,
+    tradingAccountHex,
+  });
 
-  const tradingAccount = getTradingAccount({ encryptScalar, qqAccount });
+  const tradingAccount = await getTradingAccountFromFundingAccount(
+    fundingAccount
+  );
+  return zkos.decryptTradingAccountValue(signature, tradingAccount);
+}
 
-  const zkosAccount = zkos.fundingToZkosAccount(tradingAccount);
-  const balance = zkos.decryptAccountValue(signatureArray, zkosAccount);
+export async function getAccountValueFromOutput(
+  signature: string,
+  output: string
+) {
+  const zkos = await import('zkos-wasm');
+  return zkos.decryptOutputValue(signature, output);
+}
 
-  return { balance };
+export async function decryptTradingAccountValue(
+  signature: string,
+  tradingAccount: string
+) {
+  const zkos = await import('zkos-wasm');
+  return zkos.decryptTradingAccountValue(signature, tradingAccount);
+}
+
+export async function decryptAccountPoint(
+  signature: string,
+  tradingAccount: string,
+  balance: number
+) {
+  const zkos = await import('zkos-wasm');
+  return zkos.decryptAccountPoint(signature, tradingAccount, balance);
+}
+
+export async function verifyKeyPairWithTradingAccount(
+  signature: string,
+  tradingAccount: string
+) {
+  const zkos = await import('zkos-wasm');
+  return zkos.verifyKeyPairTradingAccount(signature, tradingAccount);
+}
+
+export async function verifyTradingAccount(
+  signature: string,
+  tradingAccount: string,
+  balance: number
+) {
+  const zkos = await import('zkos-wasm');
+  return zkos.verifyTradingAccount(signature, tradingAccount, balance);
+}
+
+export async function getUpdatedAddressesFromTx(signature: string, tx: string) {
+  const zkos = await import('zkos-wasm');
+  return zkos.getUpdatedAddressesFromTransaction(signature, tx);
+}
+
+export async function getTradingAccountWithBalance(
+  signature: string,
+  balance: number
+) {
+  const zkos = await import('zkos-wasm');
+
+  const publicKey = zkos.generatePublicKeyFromSignature(signature);
+
+  const fundingAccount = zkos.generateChainFundingTradingAccount(
+    publicKey,
+    balance
+  );
+
+  return zkos.fundingToTradingAccount(fundingAccount);
 }
 
 export {
   generatePublicKey,
-  generateHexAddress,
-  getNewTradingAccount,
-  getTradingAccount,
-  getZkosAccount,
+  generatePublicKeyHexAddress,
+  generateNewFundingAccount,
+  generateZeroTradingAccountFromHexAddress,
+  generateRandomTradingAddress,
+  getTradingAccountFromFundingAccount,
+  getTradingHexAddressFromAccount,
+  getTradingHexAddressFromAccountHex,
   getAccountValue,
-  getZkosHexAddress,
   getUtxoHex,
   verifyDarkTx,
-  generateZeroZkosAccount,
-  generateRandomReceiverAddress,
 };
