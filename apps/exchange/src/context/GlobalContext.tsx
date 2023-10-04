@@ -12,13 +12,13 @@ type GlobalContext = {
   setHexAddress: Dispatch<SetStateAction<string | undefined>>;
 
   qqAccount: string | undefined;
-  setQqAccount: Dispatch<SetStateAction<string | undefined>>;
+  setTradingAccount: Dispatch<SetStateAction<string | undefined>>;
 
   encryptScalar: string | undefined;
   setEncryptScalar: Dispatch<SetStateAction<string | undefined>>;
 
-  amount: string | undefined;
-  setAmount: Dispatch<SetStateAction<string | undefined>>;
+  amount: number | undefined;
+  setAmount: Dispatch<SetStateAction<number | undefined>>;
 
   signature: string | undefined;
   setSignature: Dispatch<SetStateAction<string | undefined>>;
@@ -28,9 +28,9 @@ const GlobalContext = createContext<GlobalContext | null>(null);
 
 const GlobalContextProvider = ({ children }: { children: React.ReactNode }) => {
   const [hexAddress, setHexAddress] = useState<string>();
-  const [qqAccount, setQqAccount] = useState<string>();
+  const [tradingAccount, setTradingAccount] = useState<string>();
   const [encryptScalar, setEncryptScalar] = useState<string>();
-  const [amount, setAmount] = useState<string>();
+  const [amount, setAmount] = useState<number>();
   const [signature, setSignature] = useState<string>();
 
   return (
@@ -38,8 +38,8 @@ const GlobalContextProvider = ({ children }: { children: React.ReactNode }) => {
       value={{
         hexAddress,
         setHexAddress,
-        qqAccount,
-        setQqAccount,
+        qqAccount: tradingAccount,
+        setTradingAccount,
         encryptScalar,
         setEncryptScalar,
         amount,

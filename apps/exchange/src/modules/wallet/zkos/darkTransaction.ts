@@ -5,9 +5,15 @@ import {
 } from './tradeOrder';
 import {
   getUtxoHex,
-  getZkosHexAddress,
   verifyDarkTx,
+  generateZeroTradingAccountFromHexAddress,
+  getUpdatedAddressesFromTx,
+  getAccountValueFromOutput,
 } from './accountManagement';
+import {
+  AddNewAccountInLocalData,
+  updateAccountStatusInLocalData,
+} from './tradingAccount';
 
 export const convertToJsonString = (jsObject: unknown) => {
   return JSON.stringify(jsObject);
@@ -17,22 +23,20 @@ export async function darkTransaction({
   amountSend,
   amountAvailable,
   signature,
-  zkosAccountHex,
-  toAccount,
+  fromAddress,
+  toAddress,
+  twilightAddress,
 }: {
   signature: string;
-  zkosAccountHex: string;
+  twilightAddress: string;
+  fromAddress: string;
+  toAddress: string;
   amountAvailable: number;
   amountSend: number;
-  toAccount: string;
 }) {
   const zkos = await import('zkos-wasm');
 
-  const zkosHexAddress = await getZkosHexAddress(zkosAccountHex);
-
-  console.log('zkosHexAddress', zkosHexAddress);
-
-  const utxos = await getUtxoForAddress(zkosHexAddress);
+  const utxos = await getUtxoForAddress(fromAddress);
   console.log('utxos', utxos);
 
   const utxoString = JSON.stringify(utxos.result[0]);
@@ -46,14 +50,14 @@ export async function darkTransaction({
   const outputString = JSON.stringify(output.result);
 
   const coinTypeInput = zkos.createInputFromOutput(
-    // outputFromZkos,
     outputString,
-    // defaultUtxo,
     utxoString,
     BigInt(0)
   );
 
-  const zeroZkosAccount = zkos.generateZeroZkosAccountFromAddress(toAccount);
+  const zeroTradingAccount = await generateZeroTradingAccountFromHexAddress({
+    tradingHexAddress: toAddress,
+  });
 
   const transactionVector = [
     {
@@ -62,7 +66,7 @@ export async function darkTransaction({
       receivers: [
         {
           amount: amountSend,
-          zkos_account: zeroZkosAccount,
+          trading_account: zeroTradingAccount,
         },
       ],
     },
@@ -73,7 +77,7 @@ export async function darkTransaction({
 
   const darkTx = zkos.createDarkTransferTransaction(
     convertToJsonString(transactionVector),
-    convertToJsonString([signature]),
+    signature,
     convertToJsonString(senderBalanceVector),
     convertToJsonString(receiverBalanceVector)
   );
@@ -84,4 +88,83 @@ export async function darkTransaction({
 
   const txResponse = await commitDarkTransaction(darkTx);
   console.log('txResponse', txResponse);
+
+  const txHash = JSON.parse(txResponse.result).txHash;
+  console.log('txResponse.result.txHash', txHash);
+
+  txHash &&
+    updateAccountStatusInLocalData({
+      twilightAddress,
+      tradingAddress: fromAddress,
+    });
+
+  await delay(5000);
+
+  const updatedAddresses = await getUpdatedAddressesFromTx(signature, darkTx);
+
+  console.log('updatedAddresses', updatedAddresses);
+
+  AddNewAccountInLocalData(
+    { twilightAddress },
+    JSON.parse(updatedAddresses).map((item: string) => ({
+      tradingAccount: '',
+      encryptScalar: '',
+      tradingAddress: item,
+      transactionId: txHash,
+      transactionType: 'darkTransaction',
+      status: 'unSpend',
+      height: 0,
+    }))
+  );
 }
+
+function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+const getAddressUtxo = async (address: string) => {
+  const utxos = await getUtxoForAddress(address);
+  console.log('utxos', utxos);
+
+  return JSON.stringify(utxos.result[0]);
+};
+
+export const getAddressUtxoHex = async (address: string) => {
+  const utxos = await getUtxoForAddress(address);
+  console.log('utxos', utxos);
+
+  const utxoHex = await getUtxoHex(JSON.stringify(utxos.result[0]));
+  console.log('utxoHex', utxoHex);
+
+  return utxoHex;
+};
+
+const getOutputFromUtxo = async (utxo: string) => {
+  const utxoHex = await getUtxoHex(utxo);
+  console.log('utxoHex', utxoHex);
+
+  const output = await getUtxoOutput(utxoHex);
+  console.log('output', output);
+
+  return JSON.stringify(output.result);
+};
+
+export const getAddressOutput = async (address: string) => {
+  console.log('toAccount ', address);
+
+  const utxoString = await getAddressUtxo(address);
+  console.log('utxoString', utxoString);
+
+  const outputString = await getOutputFromUtxo(utxoString);
+
+  return outputString;
+};
+
+export const getAddressValue = async (signature: string, address: string) => {
+  const output = await getAddressOutput(address);
+  const value = await getAccountValueFromOutput(signature, output);
+
+  console.log('address value', value);
+
+  return value;
+};

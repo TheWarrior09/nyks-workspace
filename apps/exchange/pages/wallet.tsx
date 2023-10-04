@@ -27,19 +27,24 @@ import {
   FundingToTradingModal,
   TradingAccountList,
 } from '../src/modules/wallet';
-import { generateHexAddress } from '../src/modules/wallet/zkos/accountManagement';
+import { generatePublicKeyHexAddress } from '../src/modules/wallet/zkos/accountManagement';
 import { useQueryMintBurnTradingBtc } from '../src/modules/wallet/hooks/useQueryMintBurnTradingBtc';
 import { WithdrawModal } from '../src/modules/wallet/components/WithdrawModal';
+import TransactionList from '../src/modules/wallet/components/TransactionList';
 
 const Wallet = () => {
   const { hexAddress, setHexAddress, setSignature } = useGlobalContext();
 
-  const { getAccountsQuery, keplrConnected, getBtcBalanceOnNYKS } =
-    useKeplrWallet({
-      chainId: CHAIN_ID,
-      tendermintRpc: TENDERMINT_RPC,
-      cosmosRest: COSMOS_REST,
-    });
+  const {
+    getAccountsQuery,
+    keplrConnected,
+    getBtcBalanceOnNYKS,
+    getNyksBalanceOnNYKS,
+  } = useKeplrWallet({
+    chainId: CHAIN_ID,
+    tendermintRpc: TENDERMINT_RPC,
+    cosmosRest: COSMOS_REST,
+  });
 
   const twilightAddress = getAccountsQuery.data?.[0].address;
 
@@ -71,7 +76,7 @@ const Wallet = () => {
       signature,
     });
 
-    const hexAddress = await generateHexAddress({ publicKey });
+    const hexAddress = await generatePublicKeyHexAddress({ publicKey });
     setHexAddress(hexAddress);
   };
 
@@ -207,12 +212,16 @@ const Wallet = () => {
                 </Box>
               </Grid>
 
-              <Grid item xs={4}>
-                <>
-                  <Typography variant="h6" color="text.secondary" mt={2} mb={2}>
-                    {getBtcBalanceOnNYKS()} SATS
-                  </Typography>
-                </>
+              <Grid item xs={2}>
+                <Typography variant="h6" color="text.secondary" mt={2} mb={2}>
+                  {getBtcBalanceOnNYKS()} SATS
+                </Typography>
+              </Grid>
+
+              <Grid item xs={2}>
+                <Typography variant="h6" color="text.secondary" mt={2} mb={2}>
+                  {getNyksBalanceOnNYKS()} nyks
+                </Typography>
               </Grid>
 
               <Grid item xs={4}>
@@ -283,6 +292,7 @@ const Wallet = () => {
                     <FundingToTradingModal
                       onClose={handleCloseTransferDialog}
                       open={selectedTransferDialog}
+                      twilightAddress={twilightAddress ?? ''}
                     />
                   ) : null}
 
@@ -308,6 +318,22 @@ const Wallet = () => {
               </Typography>
 
               <TradingAccountList twilightAddress={twilightAddress ?? ''} />
+            </Box>
+          ) : null}
+
+          {hexAddress ? (
+            <Box mt={3}>
+              <Typography
+                variant="h5"
+                gutterBottom
+                component="div"
+                align="left"
+                sx={{ my: 3 }}
+              >
+                Transaction List
+              </Typography>
+
+              <TransactionList twilightAddress={twilightAddress ?? ''} />
             </Box>
           ) : null}
         </Container>
