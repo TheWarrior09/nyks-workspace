@@ -6,7 +6,6 @@ import {
   getUtxoOutput,
 } from './zkosApi';
 import {
-  base64ToUint8Array,
   getUtxoHex,
   verifyDarkTx,
   generateZeroTradingAccountFromHexAddress,

@@ -213,7 +213,6 @@ export async function createQuisquisTransaction({
 }
 
 export {
-  base64ToUint8Array,
   generatePublicKey,
   generatePublicKeyHexAddress,
   generateNewFundingAccount,
