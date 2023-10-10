@@ -6,11 +6,11 @@ export async function generateZkOSLendOrder({
   amount: number;
 }) {
   // const amount  = 100
-  const quisquis = await import('@nyks-workspace/quisquis-wallet');
+  const quisquis = await import('zkos-wasm');
 
-  const publicKey = quisquis.generatePublicKeyFromSignatureString(signature);
+  const publicKey = quisquis.generatePublicKeyFromSignature(signature);
 
-  const tradingQuisquisAccount = quisquis.generateChainTradingAccount(
+  const tradingQuisquisAccount = quisquis.generateChainFundingTradingAccount(
     publicKey,
     amount
   );
@@ -22,18 +22,22 @@ export async function generateZkOSLendOrder({
   //   JSON.stringify(parseTradingAccountJson.encrypt_scalar_hex),
   //   parseTradingAccountJson.encrypt_scalar_hex
   // );
-  const zkosAccount = quisquis.fundingToZkosAccount(tradingQuisquisAccount);
-  // console.log('zkos account', zkosAccount);
-  const zkosHexAddress = quisquis.getHexAddressFromZkosAccount(zkosAccount);
-  // console.log('zkos Hex Address', zkosHexAddress);
+  const tradingAccount = quisquis.fundingToTradingAccount(
+    tradingQuisquisAccount
+  );
+  // console.log('Trading account', TradingAccount);
+  const tradingHexAddress =
+    quisquis.getHexAddressFromTradingAccount(tradingAccount);
+  // console.log('Trading Hex Address', TradingHexAddress);
   const scriptAddress = quisquis.getScriptAddress();
   // console.log('script address', scriptAddress);
-  const outputFromZkos = quisquis.createOutputFromZkosAccount(zkosAccount);
-  // console.log('outputFromZkos', outputFromZkos);
+  const outputFromTrading =
+    quisquis.createOutputFromTradingAccount(tradingHexAddress);
+  // console.log('outputFromTrading', outputFromTrading);
   const defaultUtxo = quisquis.createDefaultUtxo();
   // console.log('defaultUtxo', defaultUtxo);
   const coinTypeInput = quisquis.createInputFromOutput(
-    outputFromZkos,
+    outputFromTrading,
     defaultUtxo,
     BigInt(amount)
   );
@@ -45,7 +49,7 @@ export async function generateZkOSLendOrder({
   // console.log('hexScalarToJson', hexScalarToJson);
   const outputMemo = quisquis.createOutputForMemo(
     scriptAddress,
-    zkosHexAddress,
+    tradingHexAddress,
     BigInt(amount),
     BigInt(amount),
     JSON.stringify(parseTradingAccountJson.encrypt_scalar_hex)
@@ -58,7 +62,7 @@ export async function generateZkOSLendOrder({
   const zkosOrder = quisquis.createZkOSLendOrder(
     coinTypeInput,
     outputMemo,
-    base64ToUint8Array(signature),
+    signature,
     rScaler,
     BigInt(100),
     JSON.stringify('account_id'),
@@ -92,7 +96,7 @@ function base64ToUint8Array(base64: string) {
 // }) {
 //   // const amount  = 100
 
-//   const quisquis = await import('@nyks-workspace/quisquis-wallet');
+//   const quisquis = await import('zkos-wasm');
 
 //   const publicKey = quisquis.generatePublicKeyFromSignatureString(signature);
 
@@ -166,26 +170,26 @@ function base64ToUint8Array(base64: string) {
 //   console.log('create zkos lend order', zkosOrder);
 // }
 
-async function queryZkOSLendOrder({ signature }: { signature: string }) {
-  const quisquis = await import('@nyks-workspace/quisquis-wallet');
+// async function queryZkOSLendOrder({ signature }: { signature: string }) {
+//   const quisquis = await import('zkos-wasm');
 
-  const publicKey = quisquis.generatePublicKeyFromSignatureString(signature);
+//   const publicKey = quisquis.generatePublicKeyFromSignatureString(signature);
 
-  const tradingQuisquisAccount = quisquis.generateChainTradingAccount(
-    publicKey,
-    10
-  );
+//   const tradingQuisquisAccount = quisquis.generateChainTradingAccount(
+//     publicKey,
+//     10
+//   );
 
-  const zkosAccount = quisquis.fundingToZkosAccount(tradingQuisquisAccount);
+//   const zkosAccount = quisquis.fundingToZkosAccount(tradingQuisquisAccount);
 
-  const zkosHexAddress = quisquis.getHexAddressFromZkosAccount(zkosAccount);
+//   const zkosHexAddress = quisquis.getHexAddressFromZkosAccount(zkosAccount);
 
-  const zkosOrder = quisquis.queryLendOrderZkos(
-    zkosHexAddress,
-    base64ToUint8Array(signature),
-    JSON.stringify('account_id'),
-    'PENDING'
-  );
+//   const zkosOrder = quisquis.queryLendOrderZkos(
+//     zkosHexAddress,
+//     base64ToUint8Array(signature),
+//     JSON.stringify('account_id'),
+//     'PENDING'
+//   );
 
-  console.log('query zkos lend order', zkosOrder);
-}
+//   console.log('query zkos lend order', zkosOrder);
+// }

@@ -11,8 +11,10 @@ import {
 } from '../../wallet/zkos/tradeOrder';
 import { useGlobalContext } from '../../../context';
 import {} from '../../wallet/zkos/';
-import { getTradingAccountDetails } from '../../wallet/zkos/tradingAccount';
-import { getTradingAccount } from '../../wallet/zkos/accountManagement';
+import {
+  getFundingAccountString,
+  getTradingAccountDetails,
+} from '../../wallet/zkos/tradingAccount';
 
 type OrderType = 'MARKET' | 'LIMIT';
 type PositionType = 'LONG' | 'SHORT';
@@ -116,7 +118,10 @@ export default function PlaceOrder() {
     //   encrypt_scalar_hex: encryptScalar,
     // });
 
-    const tradingAccount = getTradingAccount({ encryptScalar, qqAccount });
+    const tradingAccount = getFundingAccountString({
+      encryptScalarHex: encryptScalar,
+      tradingAccountHex: qqAccount,
+    });
 
     // const order = await createTraderOrder({
     //   amount: Number(amount),
@@ -173,7 +178,7 @@ export default function PlaceOrder() {
       <NumberInput
         label="Quantity"
         denom="BTC"
-        value={quantity}
+        value={String(quantity)}
         onChange={(value) => setQuantity(value)}
       />
       {orderType === 'LIMIT' ? (

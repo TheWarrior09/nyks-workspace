@@ -5,7 +5,10 @@ import colors from '../../../../colors';
 import { useKeplrWallet } from '@nyks-workspace/hooks';
 import { CHAIN_ID, COSMOS_REST, TENDERMINT_RPC } from '../../../../constants';
 import { Box } from '@mui/material';
-import { getZkosAccount } from '../../wallet/zkos';
+import {
+  getFundingAccountString,
+  getTradingAccountFromFundingAccount,
+} from '../../wallet/zkos';
 import {
   createCancelTraderOrder,
   createQueryTraderOrder,
@@ -17,7 +20,6 @@ import {
   useQuery,
 } from '@tanstack/react-query';
 import { useGlobalContext } from '../../../context';
-import { getTradingAccount } from '../../wallet/zkos/accountManagement';
 
 async function submitQueryTraderOrder({
   accountId,
@@ -28,7 +30,9 @@ async function submitQueryTraderOrder({
   tradingAccount: string;
   signature: string;
 }) {
-  const { zkosHexAddress } = await getZkosAccount(tradingAccount);
+  const zkosHexAddress = await getTradingAccountFromFundingAccount(
+    tradingAccount
+  );
 
   const query = await createQueryTraderOrder({
     signature,
@@ -81,7 +85,10 @@ const useQueryTraderOrder = ({
   qqAccount: string;
   encryptScalar: string;
 }) => {
-  const tradingAccount = getTradingAccount({ encryptScalar, qqAccount });
+  const tradingAccount = getFundingAccountString({
+    encryptScalarHex: encryptScalar,
+    tradingAccountHex: qqAccount,
+  });
 
   const queryOrder = useQuery({
     queryKey: [
@@ -113,7 +120,9 @@ const submitCancelTraderOrder = async ({
   signature: string;
   uuid: string;
 }) => {
-  const { zkosHexAddress } = await getZkosAccount(tradingAccount);
+  const zkosHexAddress = await getTradingAccountFromFundingAccount(
+    tradingAccount
+  );
   const cancel = await createCancelTraderOrder({
     accountId,
     orderStatus: 'PENDING',
