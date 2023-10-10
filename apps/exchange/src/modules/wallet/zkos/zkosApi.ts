@@ -83,10 +83,30 @@ const commitDarkTransaction = async (darkTxHex: string) => {
   return data;
 };
 
+const commitBurnTransaction = async (
+  darkTxHex: string,
+  twilightAddress: string
+) => {
+  const message = JSON.stringify({
+    jsonrpc: '2.0',
+    method: 'txCommit',
+    params: [darkTxHex, twilightAddress],
+    id: 1,
+  });
+  const { data } = await axios.post(ZKOS_API_ENDPOINT, message, {
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*',
+    },
+  });
+  return data;
+};
+
 export {
   getUtxoFromDB,
   getUtxoForAddress,
   getAllUtxoForAddress,
   getUtxoOutput,
   commitDarkTransaction,
+  commitBurnTransaction,
 };
