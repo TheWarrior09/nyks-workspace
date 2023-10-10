@@ -22,9 +22,7 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import { ChangeEvent, useEffect, useState } from 'react';
 import {
-  AccountLocal,
   AddNewAccountInLocalData,
-  getAccountList,
   getTradingAccountDetails,
 } from '../zkos/tradingAccount';
 import { useGlobalContext } from '../../../context';
@@ -37,7 +35,10 @@ import {
 import { useTwilightRpcWithCosmjs } from '@nyks-workspace/hooks';
 import Long from 'long';
 import { truncate } from './TradingAccountList';
-import { useBroadcastDarkTransactionSingle } from '../hooks/useBroadcastTransaction';
+import {
+  useBroadcastDarkTransactionSingle,
+  useBroadcastQuisquisTransactionSingle,
+} from '../hooks/useBroadcastTransaction';
 // import { createTraderOrder, getZkosAccount } from '../zkos';
 // import {
 //   createCancelTraderOrder,
@@ -72,6 +73,9 @@ function FundingToTradingModal({
   );
 
   const broadcastDarkTransactionSingle = useBroadcastDarkTransactionSingle();
+  const broadcastQuisquisTransactionSingle =
+    useBroadcastQuisquisTransactionSingle();
+
   const { mintBurnTradingBtc } = useTwilightRpcWithCosmjs();
   const { signature } = useGlobalContext();
   if (!signature) throw new Error('signature not found');
@@ -130,7 +134,7 @@ function FundingToTradingModal({
     setReceiverAddress(receiverAddress);
   };
 
-  const handleTradingToTradingSubmit = async () => {
+  const handleTradingToDarkTxSubmit = async () => {
     const senderBalance = tradingAccountData.find(
       (item) => item.tradingAddress === senderAddress
     )?.btcValue;
@@ -144,7 +148,28 @@ function FundingToTradingModal({
       fromAddress: senderAddress,
       toAddress: receiverAddress,
       toAddressType: toAddressType,
-      amountAvailable: senderBalance,
+      amountAvailable: Number(senderBalance),
+      amountSend: Number(amount),
+    });
+
+    onClose();
+  };
+
+  const handleTradingToQuisquisTxSubmit = async () => {
+    const senderBalance = tradingAccountData.find(
+      (item) => item.tradingAddress === senderAddress
+    )?.value;
+
+    if (typeof senderBalance === 'undefined' || typeof amount === 'undefined')
+      return;
+
+    await broadcastQuisquisTransactionSingle.mutateAsync({
+      signature,
+      twilightAddress,
+      fromAddress: senderAddress,
+      toAddress: receiverAddress,
+      toAddressType: toAddressType,
+      amountAvailable: Number(senderBalance),
       amountSend: Number(amount),
     });
 
@@ -215,7 +240,7 @@ function FundingToTradingModal({
         onChange={handleChangeToAddressType}
       >
         <FormControlLabel value="address" control={<Radio />} label="Address" />
-        <FormControlLabel value="output" control={<Radio />} label="Output" />
+        <FormControlLabel value="output" control={<Radio />} label="UTXO ID" />
       </RadioGroup>
     </FormControl>
   );
@@ -289,20 +314,43 @@ function FundingToTradingModal({
     </>
   );
 
-  const renderTradingToTradingTxSubmitButton = (
-    <Button
-      onClick={handleTradingToTradingSubmit}
-      disabled={
-        typeof amount === 'undefined' ||
-        broadcastDarkTransactionSingle.status === 'loading'
-      }
+  const renderFromAddressField = (
+    <FormControl fullWidth sx={{ my: 1, minWidth: 120 }}>
+      <InputLabel id="demo-simple-select-label">From Address</InputLabel>
+      <Select
+        labelId="demo-simple-select-label"
+        id="demo-simple-select"
+        value={senderAddress}
+        label="From Address"
+        onChange={handleChangeAddressTransferFrom}
+      >
+        {tradingAccountData.map((account) => (
+          <MenuItem value={account.tradingAddress} key={account.tradingAddress}>
+            Address: {truncate(account.tradingAddress, 24)} - Balance:
+            {Number(account.value)}
+          </MenuItem>
+        ))}
+      </Select>
+    </FormControl>
+  );
+
+  const renderTransferAmountField = (
+    <TextField
+      variant="outlined"
+      autoFocus
+      margin="dense"
+      id="name"
+      label="Amount"
+      type="number"
+      value={amount}
+      onChange={handleTransferAmount}
       fullWidth
-      variant="contained"
-    >
-      {broadcastDarkTransactionSingle.status === 'loading'
-        ? 'Broadcasting tx'
-        : 'Trading to Trading'}
-    </Button>
+      autoComplete="off"
+      inputProps={{
+        inputMode: 'numeric',
+        pattern: '[0-9]*',
+      }}
+    />
   );
 
   const renderFundingToTradingTxSubmitButton = (
@@ -317,6 +365,43 @@ function FundingToTradingModal({
       {mintBurnTradingBtc.status === 'loading'
         ? 'Broadcasting tx'
         : 'Funding to Trading'}
+    </Button>
+  );
+
+  const renderTradingToTradingTxSubmitButton = (
+    <Button
+      onClick={handleTradingToDarkTxSubmit}
+      disabled={
+        typeof amount === 'undefined' ||
+        broadcastDarkTransactionSingle.status === 'loading' ||
+        broadcastQuisquisTransactionSingle.status === 'loading'
+      }
+      fullWidth
+      variant="contained"
+    >
+      {broadcastDarkTransactionSingle.status === 'loading'
+        ? 'Broadcasting tx'
+        : 'Dark transaction'}
+    </Button>
+  );
+
+  const renderTradingToQuisquisTxSubmitButton = (
+    <Button
+      onClick={handleTradingToQuisquisTxSubmit}
+      disabled={
+        typeof amount === 'undefined' ||
+        broadcastQuisquisTransactionSingle.status === 'loading' ||
+        broadcastDarkTransactionSingle.status === 'loading'
+      }
+      fullWidth
+      variant="contained"
+      sx={{ ml: 2 }}
+    >
+      {broadcastQuisquisTransactionSingle.status === 'loading'
+        ? 'Broadcasting tx'
+        : 'Quisquis transaction'}
+    </Button>
+  );
     </Button>
   );
 
@@ -372,35 +457,28 @@ function FundingToTradingModal({
             </Grid>
           </Grid>
 
-          {transferFrom === 'trading' && transferTo === 'trading'
-            ? renderTradingToTradingTxInputs
+          {transferFrom === 'funding' && transferTo === 'trading'
+            ? renderTransferAmountField
             : null}
-        </DialogContentText>
 
-        <TextField
-          variant="outlined"
-          autoFocus
-          margin="dense"
-          id="name"
-          label="Amount"
-          type="number"
-          value={amount}
-          onChange={handleTransferAmount}
-          fullWidth
-          autoComplete="off"
-          inputProps={{
-            inputMode: 'numeric',
-            pattern: '[0-9]*',
-          }}
-        />
+          {transferFrom === 'trading' && transferTo === 'trading' ? (
+            <>
+              {renderTradingToTradingTxInputs}
+              {renderTransferAmountField}
+            </>
+          ) : null}
       </DialogContent>
       <DialogActions disableSpacing={true} sx={{ px: 3, pb: 3 }}>
         {transferFrom === 'funding' && transferTo === 'trading'
           ? renderFundingToTradingTxSubmitButton
           : null}
 
-        {transferFrom === 'trading' && transferTo === 'trading'
-          ? renderTradingToTradingTxSubmitButton
+        {transferFrom === 'trading' && transferTo === 'trading' ? (
+          <>
+            {renderTradingToTradingTxSubmitButton}
+            {renderTradingToQuisquisTxSubmitButton}
+          </>
+        ) : null}
           : null}
 
         {/* <Button onClick={handleTrade} fullWidth variant="contained">

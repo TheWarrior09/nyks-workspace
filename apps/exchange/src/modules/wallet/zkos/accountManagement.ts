@@ -146,6 +146,41 @@ export async function getTradingAccountWithBalance(
   return zkos.fundingToTradingAccount(fundingAccount);
 }
 
+export async function getTxIDFromUTXO(utxoHex: string) {
+  const zkos = await import('zkos-wasm');
+  const utxo = zkos.createUtxoFromHex(utxoHex);
+  return zkos.txIdToHexString(utxo);
+}
+
+export async function createQuisquisTransaction({
+  signature,
+  sender,
+  receiver,
+  amount,
+  type,
+  senderUpdatedBalance,
+  anonymitySet,
+}: {
+  signature: string;
+  sender: string;
+  receiver: string;
+  amount: number;
+  type: 'address' | 'output';
+  senderUpdatedBalance: number;
+  anonymitySet: string;
+}) {
+  const zkos = await import('zkos-wasm');
+  return zkos.createQuisQuisTransactionSingle(
+    signature,
+    sender,
+    receiver,
+    BigInt(amount),
+    type === 'output',
+    BigInt(senderUpdatedBalance),
+    anonymitySet
+  );
+}
+
 export {
   generatePublicKey,
   generatePublicKeyHexAddress,
