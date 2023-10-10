@@ -1,4 +1,5 @@
 import {
+  Link,
   Paper,
   Table,
   TableBody,
@@ -9,6 +10,7 @@ import {
 } from '@mui/material';
 import { useQueryGetTradingAccounts } from '../hooks/useQueryZkos';
 import { useGlobalContext } from '../../../context';
+import { NYKS_EXPLORER } from '../../../../constants';
 
 interface CustomTableCellProps {
   children: React.ReactNode;
@@ -99,7 +101,15 @@ function TransactionList({
                 >
                   <CustomTableCell align="center">{index + 1}</CustomTableCell>
 
-                  <CustomTableCell align="center">{row.txId}</CustomTableCell>
+                  <CustomTableCell align="center">
+                    <Link
+                      href={`${NYKS_EXPLORER}/transaction/${row.txId}`}
+                      target="_blank"
+                      rel="noopener"
+                    >
+                      {row.txId}
+                    </Link>
+                  </CustomTableCell>
                 </TableRow>
               ))}
         </TableBody>
