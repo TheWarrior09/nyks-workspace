@@ -1,6 +1,7 @@
 import {
   commitDarkTransaction,
   getUtxoForAddress,
+  getUtxoFromDB,
   getUtxoOutput,
 } from './zkosApi';
 import {
@@ -9,6 +10,7 @@ import {
   generateZeroTradingAccountFromHexAddress,
   getUpdatedAddressesFromTx,
   getAccountValueFromOutput,
+  createQuisquisTransaction,
 } from './accountManagement';
 import {
   AddNewAccountInLocalData,
@@ -180,7 +182,7 @@ export async function darkTransactionSingle({
     receiver = toAddress;
   }
 
-  const darkTxSingle = zkos.darkTransactionSingle(
+  const darkTxSingleJson = zkos.darkTransactionSingle(
     signature,
     coinTypeInput,
     receiver,
@@ -188,6 +190,8 @@ export async function darkTransactionSingle({
     toAddressType === 'address' ? false : true,
     BigInt(amountAvailable - amountSend)
   );
+
+  const { tx: darkTxSingle, encrypt_scalar_hex } = JSON.parse(darkTxSingleJson);
 
   console.log('darkTxSingle', darkTxSingle);
 
@@ -206,6 +210,107 @@ export async function darkTransactionSingle({
   const updatedAddresses = await getUpdatedAddressesFromTx(
     signature,
     darkTxSingle
+  );
+
+  AddNewAccountInLocalData(
+    { twilightAddress },
+    JSON.parse(updatedAddresses).map((item: string) => ({
+      tradingAccount: '',
+      encryptScalar: '',
+      tradingAddress: item,
+      transactionId: txHash,
+      transactionType: 'darkTransaction',
+      status: 'unSpend',
+      height: 0,
+    }))
+  );
+}
+
+export async function quisquisTransactionSingle({
+  amountSend,
+  amountAvailable,
+  signature,
+  fromAddress,
+  toAddress,
+  toAddressType,
+  twilightAddress,
+}: {
+  signature: string;
+  twilightAddress: string;
+  fromAddress: string;
+  toAddress: string;
+  toAddressType: 'address' | 'output';
+  amountAvailable: number;
+  amountSend: number;
+}) {
+  const zkos = await import('zkos-wasm');
+
+  const utxos = await getUtxoForAddress(fromAddress);
+
+  const utxoString = JSON.stringify(utxos.result[0]);
+
+  const utxoHex = await getUtxoHex(utxoString);
+
+  const output = await getUtxoOutput(utxoHex);
+
+  const outputString = JSON.stringify(output.result);
+
+  const coinTypeInput = zkos.createInputFromOutput(
+    outputString,
+    utxoString,
+    BigInt(0)
+  );
+
+  let receiver: string;
+
+  if (toAddressType === 'output') {
+    const receiverOutput = await getUtxoOutput(toAddress);
+
+    const receiverOutputString = JSON.stringify(receiverOutput.result);
+
+    const receiverUtxo = zkos.createUtxoFromHex(toAddress);
+
+    receiver = zkos.createInputFromOutput(
+      receiverOutputString,
+      receiverUtxo,
+      BigInt(0)
+    );
+  } else {
+    receiver = toAddress;
+  }
+
+  const allUtxos = await getUtxoFromDB();
+
+  const quisquisTxSingle = await createQuisquisTransaction({
+    signature,
+    sender: coinTypeInput,
+    receiver,
+    amount: amountSend,
+    type: toAddressType,
+    senderUpdatedBalance: amountAvailable - amountSend,
+    anonymitySet: zkos.selectAnonymityAccounts(
+      allUtxos.result.result,
+      coinTypeInput
+    ),
+  });
+
+  console.log('quisquisTxSingle', quisquisTxSingle);
+
+  const txResponse = await commitDarkTransaction(quisquisTxSingle);
+
+  const txHash = JSON.parse(txResponse.result).txHash;
+
+  txHash &&
+    updateAccountStatusInLocalData({
+      twilightAddress,
+      tradingAddress: fromAddress,
+    });
+
+  await delay(5000);
+
+  const updatedAddresses = await getUpdatedAddressesFromTx(
+    signature,
+    quisquisTxSingle
   );
 
   AddNewAccountInLocalData(
