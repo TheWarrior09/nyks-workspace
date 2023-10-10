@@ -1,6 +1,5 @@
 import {
   Alert,
-  Button,
   Checkbox,
   Paper,
   Snackbar,
@@ -14,9 +13,10 @@ import {
 } from '@mui/material';
 import { useState } from 'react';
 import { useGlobalContext } from '../../../context';
-import { AccountLocal, updateAccountValueInLocalData } from '../zkos';
-import { getAddressValue } from '../zkos/darkTransaction';
-import { useQueryGetTradingAccounts } from '../hooks/useQueryZkos';
+import {
+  TradingAccountData,
+  useQueryGetTradingAccounts,
+} from '../hooks/useQueryZkos';
 
 interface CustomTableCellProps {
   children: React.ReactNode;
@@ -59,14 +59,14 @@ function TradingAccountList({
 
   if (!signature) throw new Error('signature not found');
 
-  function handleRowClick(row: AccountLocal) {
-    if (row.status === 'spent') return;
-    setEncryptScalar(row.encryptScalar);
-    setTradingAccount(row.tradingAccount);
+  function handleRowClick(row: TradingAccountData) {
+    // if (row.status === 'spent') return;
+    // setEncryptScalar(row.encryptScalar);
+    // setTradingAccount(row.tradingAccount);
     setSelectedRow((prev) => ({
       ...prev,
       address: row.tradingAddress,
-      amount: Number(row.btcValue),
+      amount: Number(row.value),
     }));
   }
 
@@ -111,7 +111,7 @@ function TradingAccountList({
                     backgroundColor: 'action.selected',
                   },
                 }}
-                // onClick={() => handleRowClick(row)}
+                onClick={() => handleRowClick(row)}
                 selected={selectedRow.address === row.tradingAddress}
                 hover
               >
@@ -132,7 +132,6 @@ function TradingAccountList({
 
                 <CustomTableCell align="center">
                   <Checkbox
-                    // disabled={row.status === 'spent'}
                     checked={selectedRow.address === row.tradingAddress}
                   />
                 </CustomTableCell>
