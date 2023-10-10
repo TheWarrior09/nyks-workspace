@@ -1,4 +1,5 @@
 import {
+  commitBurnTransaction,
   commitDarkTransaction,
   getUtxoForAddress,
   getUtxoFromDB,
@@ -11,6 +12,7 @@ import {
   getUpdatedAddressesFromTx,
   getAccountValueFromOutput,
   createQuisquisTransaction,
+  createDarkTransaction,
 } from './accountManagement';
 import {
   AddNewAccountInLocalData,
@@ -182,16 +184,25 @@ export async function darkTransactionSingle({
     receiver = toAddress;
   }
 
-  const darkTxSingleJson = zkos.darkTransactionSingle(
-    signature,
-    coinTypeInput,
-    receiver,
-    BigInt(amountSend),
-    toAddressType === 'address' ? false : true,
-    BigInt(amountAvailable - amountSend)
-  );
+  // const darkTxSingleJson = zkos.darkTransactionSingle(
+  //   signature,
+  //   coinTypeInput,
+  //   receiver,
+  //   BigInt(amountSend),
+  //   toAddressType === 'address' ? false : true,
+  //   BigInt(amountAvailable - amountSend)
+  // );
 
-  const { tx: darkTxSingle, encrypt_scalar_hex } = JSON.parse(darkTxSingleJson);
+  const darkTxSingleJson = await createDarkTransaction({
+    amount: amountSend,
+    receiver: receiver,
+    sender: coinTypeInput,
+    senderUpdatedBalance: amountAvailable - amountSend,
+    signature,
+    type: toAddressType,
+  });
+
+  const { tx: darkTxSingle } = JSON.parse(darkTxSingleJson);
 
   console.log('darkTxSingle', darkTxSingle);
 
@@ -325,6 +336,118 @@ export async function quisquisTransactionSingle({
       height: 0,
     }))
   );
+}
+
+export async function burnTransactionSingle({
+  burnAmount,
+  signature,
+  fromAddress,
+  toAddress,
+  twilightAddress,
+}: {
+  signature: string;
+  twilightAddress: string;
+  fromAddress: string;
+  toAddress: string;
+  burnAmount: number;
+}) {
+  const zkos = await import('zkos-wasm');
+
+  const utxos = await getUtxoForAddress(fromAddress);
+
+  const utxoString = JSON.stringify(utxos.result[0]);
+
+  const utxoHex = await getUtxoHex(utxoString);
+
+  const output = await getUtxoOutput(utxoHex);
+
+  const outputString = JSON.stringify(output.result);
+
+  const coinTypeInput = zkos.createInputFromOutput(
+    outputString,
+    utxoString,
+    BigInt(0)
+  );
+
+  // const darkTxSingleJson = zkos.darkTransactionSingle(
+  //   signature,
+  //   coinTypeInput,
+  //   toAddress,
+  //   BigInt(burnAmount),
+  //   false,
+  //   BigInt(0)
+  // );
+
+  const darkTxSingleJson = await createDarkTransaction({
+    amount: burnAmount,
+    receiver: toAddress,
+    sender: coinTypeInput,
+    senderUpdatedBalance: 0,
+    signature,
+    type: 'address',
+  });
+
+  const { tx: darkTxSingle, encrypt_scalar_hex } = JSON.parse(darkTxSingleJson);
+
+  console.log('darkTxSingle', darkTxSingle);
+  console.log('encrypt_scalar_hex', encrypt_scalar_hex);
+
+  const darkTxResponse = await commitDarkTransaction(darkTxSingle);
+  console.log('darkTxResponse', darkTxResponse);
+  const txHash = JSON.parse(darkTxResponse.result).txHash;
+
+  txHash &&
+    updateAccountStatusInLocalData({
+      twilightAddress,
+      tradingAddress: fromAddress,
+    });
+
+  await delay(10000);
+
+  const updatedAddresses = await getUpdatedAddressesFromTx(
+    signature,
+    darkTxSingle
+  );
+
+  const updatedReceiverAddress = JSON.parse(updatedAddresses)[1];
+  const utxos1 = await getUtxoForAddress(updatedReceiverAddress);
+
+  const utxoString1 = JSON.stringify(utxos1.result[0]);
+
+  const utxoHex1 = await getUtxoHex(utxoString1);
+
+  const output1 = await getUtxoOutput(utxoHex1);
+
+  const outputString1 = JSON.stringify(output1.result);
+
+  const coinTypeInput1 = zkos.createInputFromOutput(
+    outputString1,
+    utxoString1,
+    BigInt(0)
+  );
+
+  const burnTx = zkos.createBurnMessageTransaction(
+    coinTypeInput1,
+    BigInt(burnAmount),
+    encrypt_scalar_hex,
+    signature,
+    toAddress
+  );
+
+  console.log('burnTx', burnTx);
+
+  const burnTxResponse = await commitBurnTransaction(burnTx, twilightAddress);
+
+  console.log('burnTxResponse', burnTxResponse);
+
+  await delay(5000);
+
+  const tradingAccountHex = zkos.createTradingAccountHexFromOutput(
+    outputString1,
+    toAddress
+  );
+
+  return { tradingAccountHex, encryptScalarHex: encrypt_scalar_hex };
 }
 
 function delay(ms: number) {
