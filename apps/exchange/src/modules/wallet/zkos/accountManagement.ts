@@ -157,6 +157,32 @@ export async function addressMonitoring(signature: string, utxos: string) {
   return zkos.coinAddressMonitoring(utxos, signature);
 }
 
+export async function createDarkTransaction({
+  signature,
+  sender,
+  receiver,
+  amount,
+  type,
+  senderUpdatedBalance,
+}: {
+  signature: string;
+  sender: string;
+  receiver: string;
+  amount: number;
+  type: 'address' | 'output';
+  senderUpdatedBalance: number;
+}) {
+  const zkos = await import('zkos-wasm');
+  return zkos.darkTransactionSingle(
+    signature,
+    sender,
+    receiver,
+    BigInt(amount),
+    type === 'output',
+    BigInt(senderUpdatedBalance)
+  );
+}
+
 export async function createQuisquisTransaction({
   signature,
   sender,
