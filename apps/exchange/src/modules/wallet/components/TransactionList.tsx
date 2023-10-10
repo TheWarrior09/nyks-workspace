@@ -7,8 +7,8 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
-
-import { AccountLocal, getAccountList } from '../zkos';
+import { useQueryGetTradingAccounts } from '../hooks/useQueryZkos';
+import { useGlobalContext } from '../../../context';
 
 interface CustomTableCellProps {
   children: React.ReactNode;
@@ -33,7 +33,14 @@ function TransactionList({
 }: {
   twilightAddress: string;
 }): JSX.Element {
-  const tradingAccountData = getAccountList(twilightAddress);
+  const { signature } = useGlobalContext();
+
+  if (!signature) throw new Error('signature not found');
+
+  const tradingAccountsQuery = useQueryGetTradingAccounts(
+    signature,
+    twilightAddress
+  );
 
   return (
     <TableContainer
@@ -52,44 +59,49 @@ function TransactionList({
           <TableRow>
             <CustomTableCell align="center">Index</CustomTableCell>
             <CustomTableCell align="center">Transaction ID</CustomTableCell>
-            <CustomTableCell align="center">Transaction Type</CustomTableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {tradingAccountData
-            .reduce((accumulator: AccountLocal[], currentObject) => {
-              const isDuplicate = accumulator.some(
-                (obj) => obj.transactionId === currentObject.transactionId
-              );
-              if (!isDuplicate) {
-                accumulator.push(currentObject);
-              }
-              return accumulator;
-            }, [])
-            .map((row, index) => (
-              <TableRow
-                key={row.transactionId}
-                sx={{
-                  '&:last-child td, &:last-child th': { border: 0 },
-                  backgroundColor:
-                    index % 2 === 0 ? 'action.hover' : 'background.paper',
-                  '&:hover': {
-                    backgroundColor: 'action.selected',
-                  },
-                }}
-                hover
-              >
-                <CustomTableCell align="center">{index + 1}</CustomTableCell>
+          {tradingAccountsQuery.status === 'success' &&
+            tradingAccountsQuery.data
+              .reduce(
+                (
+                  accumulator: {
+                    tradingAddress: string;
+                    value: bigint;
+                    utxo: string;
+                    txId: string;
+                  }[],
+                  currentObject
+                ) => {
+                  const isDuplicate = accumulator.some(
+                    (obj) => obj.txId === currentObject.txId
+                  );
+                  if (!isDuplicate) {
+                    accumulator.push(currentObject);
+                  }
+                  return accumulator;
+                },
+                []
+              )
+              .map((row, index) => (
+                <TableRow
+                  key={row.txId}
+                  sx={{
+                    '&:last-child td, &:last-child th': { border: 0 },
+                    backgroundColor:
+                      index % 2 === 0 ? 'action.hover' : 'background.paper',
+                    '&:hover': {
+                      backgroundColor: 'action.selected',
+                    },
+                  }}
+                  hover
+                >
+                  <CustomTableCell align="center">{index + 1}</CustomTableCell>
 
-                <CustomTableCell align="center">
-                  {row.transactionId}
-                </CustomTableCell>
-
-                <CustomTableCell align="center">
-                  {row.transactionType}
-                </CustomTableCell>
-              </TableRow>
-            ))}
+                  <CustomTableCell align="center">{row.txId}</CustomTableCell>
+                </TableRow>
+              ))}
         </TableBody>
       </Table>
     </TableContainer>

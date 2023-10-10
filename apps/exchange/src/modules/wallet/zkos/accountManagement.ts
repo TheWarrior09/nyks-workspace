@@ -152,6 +152,11 @@ export async function getTxIDFromUTXO(utxoHex: string) {
   return zkos.txIdToHexString(utxo);
 }
 
+export async function addressMonitoring(signature: string, utxos: string) {
+  const zkos = await import('zkos-wasm');
+  return zkos.coinAddressMonitoring(utxos, signature);
+}
+
 export async function createQuisquisTransaction({
   signature,
   sender,

@@ -28,12 +28,13 @@ import {
   TradingAccountList,
 } from '../src/modules/wallet';
 import { generatePublicKeyHexAddress } from '../src/modules/wallet/zkos/accountManagement';
-import { useQueryMintBurnTradingBtc } from '../src/modules/wallet/hooks/useQueryMintBurnTradingBtc';
 import { WithdrawModal } from '../src/modules/wallet/components/WithdrawModal';
 import TransactionList from '../src/modules/wallet/components/TransactionList';
+import { useQueryGetTradingAccounts } from '../src/modules/wallet/hooks/useQueryZkos';
 
 const Wallet = () => {
-  const { hexAddress, setHexAddress, setSignature } = useGlobalContext();
+  const { hexAddress, setHexAddress, setSignature, signature } =
+    useGlobalContext();
 
   const {
     getAccountsQuery,
@@ -47,10 +48,6 @@ const Wallet = () => {
   });
 
   const twilightAddress = getAccountsQuery.data?.[0].address;
-
-  const tradingBtcAccounts = useQueryMintBurnTradingBtc({
-    twilightAddress,
-  });
 
   const [selectedTransferDialog, setSelectedTransferDialog] = useState(false);
   const [selectedWithdrawDialog, setSelectedWithdrawDialog] = useState(false);
@@ -80,12 +77,15 @@ const Wallet = () => {
     setHexAddress(hexAddress);
   };
 
+  const tradingAccountsQuery = useQueryGetTradingAccounts(
+    signature ?? '',
+    twilightAddress ?? ''
+  );
+
   const tradingAccountBalance =
-    tradingBtcAccounts.status === 'success' &&
-    tradingBtcAccounts.data.MintOrBurnTradingBtc.filter(
-      (item) => item.mintOrBurn === true
-    ).reduce((accumulator: number, currentValue) => {
-      const btcValue = parseInt(currentValue.btcValue);
+    tradingAccountsQuery.status === 'success' &&
+    tradingAccountsQuery.data.reduce((accumulator: number, currentValue) => {
+      const btcValue = Number(currentValue.value);
       return accumulator + btcValue;
     }, 0);
 
@@ -316,6 +316,18 @@ const Wallet = () => {
               >
                 Trading Accounts
               </Typography>
+
+              <Button
+                variant="contained"
+                onClick={() => {
+                  console.log('sync');
+                  tradingAccountsQuery.refetch();
+                }}
+                sx={{ mb: 3 }}
+                disabled={tradingAccountsQuery.isFetching}
+              >
+                Sync Accounts
+              </Button>
 
               <TradingAccountList twilightAddress={twilightAddress ?? ''} />
             </Box>

@@ -1,27 +1,22 @@
 import {
+  Alert,
   Button,
   Checkbox,
   Paper,
+  Snackbar,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
+  Typography,
 } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useGlobalContext } from '../../../context';
-import {
-  AccountLocal,
-  getAccountList,
-  getUtxoFromDB,
-  updateAccountValueInLocalData,
-} from '../zkos';
-import {
-  getAddressOutput,
-  getAddressUtxoHex,
-  getAddressValue,
-} from '../zkos/darkTransaction';
+import { AccountLocal, updateAccountValueInLocalData } from '../zkos';
+import { getAddressValue } from '../zkos/darkTransaction';
+import { useQueryGetTradingAccounts } from '../hooks/useQueryZkos';
 
 interface CustomTableCellProps {
   children: React.ReactNode;
@@ -64,7 +59,6 @@ function TradingAccountList({
 
   if (!signature) throw new Error('signature not found');
 
-
   function handleRowClick(row: AccountLocal) {
     if (row.status === 'spent') return;
     setEncryptScalar(row.encryptScalar);
@@ -76,7 +70,10 @@ function TradingAccountList({
     }));
   }
 
-  const tradingAccountData = getAccountList(twilightAddress);
+  const tradingAccountsQuery = useQueryGetTradingAccounts(
+    signature,
+    twilightAddress
+  );
 
   return (
     <TableContainer
@@ -95,79 +92,52 @@ function TradingAccountList({
           <TableRow>
             <CustomTableCell align="center">Index</CustomTableCell>
             <CustomTableCell align="center">Address</CustomTableCell>
-            {/* <CustomTableCell align="center">Encrypt Scalar</CustomTableCell> */}
+            <CustomTableCell align="center">UTXO ID</CustomTableCell>
             <CustomTableCell align="center">Value</CustomTableCell>
-            <CustomTableCell align="center">Status</CustomTableCell>
+
             <CustomTableCell align="center">Selected</CustomTableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {tradingAccountData.map((row, index) => (
-            <TableRow
-              key={row.tradingAddress}
-              sx={{
-                '&:last-child td, &:last-child th': { border: 0 },
-                backgroundColor:
-                  index % 2 === 0 ? 'action.hover' : 'background.paper',
-                '&:hover': {
-                  backgroundColor: 'action.selected',
-                },
-              }}
-              onClick={() => handleRowClick(row)}
-              selected={selectedRow.address === row.tradingAddress}
-              hover
-            >
-              <CustomTableCell align="center">{index + 1}</CustomTableCell>
+          {tradingAccountsQuery.status === 'success' &&
+            tradingAccountsQuery.data.map((row, index) => (
+              <TableRow
+                key={row.tradingAddress}
+                sx={{
+                  '&:last-child td, &:last-child th': { border: 0 },
+                  backgroundColor:
+                    index % 2 === 0 ? 'action.hover' : 'background.paper',
+                  '&:hover': {
+                    backgroundColor: 'action.selected',
+                  },
+                }}
+                // onClick={() => handleRowClick(row)}
+                selected={selectedRow.address === row.tradingAddress}
+                hover
+              >
+                <CustomTableCell align="center">{index + 1}</CustomTableCell>
 
-              <CustomTableCell align="center">
-                {truncate(row.tradingAddress, 20)}
-              </CustomTableCell>
+                <CustomTableCell align="center">
+                  {truncate(row.tradingAddress, 20)}
+                </CustomTableCell>
 
-              {/* <CustomTableCell align="center">
-                  {truncate(row.encryptScalar, 20)}
-                </CustomTableCell> */}
+                <CustomTableCell align="center">
+                  <TruncatableCopyableText text={row.utxo} maxLength={20} />
+                  {/* {truncate(row.utxo, 20)} */}
+                </CustomTableCell>
 
-              <CustomTableCell align="center">
-                {/* {row.btcValue} sats */}
-                {typeof row.btcValue !== 'undefined' ? (
-                  `${row.btcValue} sats`
-                ) : (
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    onClick={async () => {
-                      const balance = await getAddressValue(
-                        signature,
-                        row.tradingAddress
-                      );
+                <CustomTableCell align="center">
+                  {`${row.value} sats`}
+                </CustomTableCell>
 
-                      updateAccountValueInLocalData({
-                        tradingAddress: row.tradingAddress,
-                        twilightAddress,
-                        updatedValue: Number(balance),
-                      });
-
-                      setSelectedRow((prev) => ({
-                        ...prev,
-                        amount: Number(balance),
-                      }));
-                    }}
-                  >
-                    Decrypt
-                  </Button>
-                )}
-              </CustomTableCell>
-
-              <CustomTableCell align="center">{row.status}</CustomTableCell>
-
-              <CustomTableCell align="center">
-                <Checkbox
-                  disabled={row.status === 'spent'}
-                  checked={selectedRow.address === row.tradingAddress}
-                />
-              </CustomTableCell>
-            </TableRow>
-          ))}
+                <CustomTableCell align="center">
+                  <Checkbox
+                    // disabled={row.status === 'spent'}
+                    checked={selectedRow.address === row.tradingAddress}
+                  />
+                </CustomTableCell>
+              </TableRow>
+            ))}
         </TableBody>
       </Table>
     </TableContainer>
@@ -175,3 +145,58 @@ function TradingAccountList({
 }
 
 export default TradingAccountList;
+
+const TruncatableCopyableText = ({
+  text,
+  maxLength,
+}: {
+  text: string;
+  maxLength: number;
+}) => {
+  const [isCopied, setIsCopied] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+
+  const copyText = () => {
+    navigator.clipboard.writeText(text);
+    setIsCopied(true);
+
+    // Reset the copied state after a brief delay (for visual feedback)
+    setTimeout(() => {
+      setIsCopied(false);
+    }, 2000);
+  };
+
+  return (
+    <div>
+      <Typography
+        variant="body2"
+        component="span"
+        style={{
+          cursor: 'pointer',
+          textDecoration: isHovered ? 'underline' : 'none',
+          // color: isHovered ? 'blue' : 'inherit',
+          transition: 'color 0.2s',
+        }}
+        onClick={copyText}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        {truncate(text, maxLength)}
+      </Typography>
+      <Snackbar
+        open={isCopied}
+        autoHideDuration={2000}
+        onClose={() => setIsCopied(false)}
+      >
+        <Alert
+          elevation={6}
+          variant="filled"
+          onClose={() => setIsCopied(false)}
+          severity="success"
+        >
+          UTXO ID Copied!
+        </Alert>
+      </Snackbar>
+    </div>
+  );
+};
