@@ -36,9 +36,14 @@ import { useTwilightRpcWithCosmjs } from '@nyks-workspace/hooks';
 import Long from 'long';
 import { truncate } from './TradingAccountList';
 import {
+  useBroadcastBurnTransaction,
   useBroadcastDarkTransactionSingle,
   useBroadcastQuisquisTransactionSingle,
 } from '../hooks/useBroadcastTransaction';
+import {
+  TradingAccountData,
+  useQueryGetTradingAccounts,
+} from '../hooks/useQueryZkos';
 // import { createTraderOrder, getZkosAccount } from '../zkos';
 // import {
 //   createCancelTraderOrder,
@@ -75,6 +80,7 @@ function FundingToTradingModal({
   const broadcastDarkTransactionSingle = useBroadcastDarkTransactionSingle();
   const broadcastQuisquisTransactionSingle =
     useBroadcastQuisquisTransactionSingle();
+  const broadcastBurnTransaction = useBroadcastBurnTransaction();
 
   const { mintBurnTradingBtc } = useTwilightRpcWithCosmjs();
   const { signature } = useGlobalContext();
@@ -92,13 +98,18 @@ function FundingToTradingModal({
     setReceiverAddress('');
   }, [toAddressType]);
 
-  const tradingAccountData = getAccountList(twilightAddress).reduce(
-    (accumulator: AccountLocal[], currentObject) => {
+  const tradingAccountsQuery = useQueryGetTradingAccounts(
+    signature,
+    twilightAddress
+  );
+
+  const tradingAccountData = tradingAccountsQuery.data.reduce(
+    (accumulator: TradingAccountData[], currentObject) => {
       const isDuplicate = accumulator.some(
         (obj) => obj.tradingAddress === currentObject.tradingAddress
       );
       if (!isDuplicate) {
-        if (Number(currentObject.btcValue) > 0) {
+        if (Number(currentObject.value) > 0) {
           accumulator.push(currentObject);
         }
       }
@@ -137,7 +148,7 @@ function FundingToTradingModal({
   const handleTradingToDarkTxSubmit = async () => {
     const senderBalance = tradingAccountData.find(
       (item) => item.tradingAddress === senderAddress
-    )?.btcValue;
+    )?.value;
 
     if (typeof senderBalance === 'undefined' || typeof amount === 'undefined')
       return;
@@ -172,6 +183,43 @@ function FundingToTradingModal({
       amountAvailable: Number(senderBalance),
       amountSend: Number(amount),
     });
+
+    onClose();
+  };
+
+  const handleTradingToFundingTxSubmit = async () => {
+    const senderBalance = tradingAccountData.find(
+      (item) => item.tradingAddress === senderAddress
+    )?.value;
+
+    if (typeof senderBalance === 'undefined') return;
+
+    const publicKey = await generatePublicKey({ signature });
+    const receiverAddress = await generateRandomTradingAddress({ publicKey });
+
+    const broadcastBurnTransactionResponse =
+      await broadcastBurnTransaction.mutateAsync({
+        signature,
+        twilightAddress,
+        fromAddress: senderAddress,
+        toAddress: receiverAddress,
+        burnAmount: Number(senderBalance),
+      });
+
+    await mintBurnTradingBtc.mutateAsync(
+      {
+        btcValue: Long.fromNumber(Number(senderBalance)),
+        qqAccount: broadcastBurnTransactionResponse.tradingAccountHex,
+        encryptScalar: broadcastBurnTransactionResponse.encryptScalarHex,
+        mintOrBurn: false,
+        twilightAddress: twilightAddress,
+      },
+      {
+        onSuccess: (data) => {
+          console.log('onSuccess', data);
+        },
+      }
+    );
 
     onClose();
   };
@@ -262,7 +310,7 @@ function FundingToTradingModal({
               key={account.tradingAddress}
             >
               Address: {truncate(account.tradingAddress, 24)} - Balance:
-              {account.btcValue}
+              {Number(account.value)}
             </MenuItem>
           ))}
         </Select>
@@ -402,6 +450,20 @@ function FundingToTradingModal({
         : 'Quisquis transaction'}
     </Button>
   );
+
+  const renderTradingToFundingTxSubmitButton = (
+    <Button
+      onClick={handleTradingToFundingTxSubmit}
+      disabled={
+        senderAddress.length === 0 ||
+        broadcastBurnTransaction.status === 'loading'
+      }
+      fullWidth
+      variant="contained"
+    >
+      {broadcastBurnTransaction.status === 'loading'
+        ? 'Broadcasting tx'
+        : 'Burn transaction'}
     </Button>
   );
 
@@ -467,6 +529,11 @@ function FundingToTradingModal({
               {renderTransferAmountField}
             </>
           ) : null}
+
+          {transferFrom === 'trading' && transferTo === 'funding'
+            ? renderFromAddressField
+            : null}
+        </DialogContentText>
       </DialogContent>
       <DialogActions disableSpacing={true} sx={{ px: 3, pb: 3 }}>
         {transferFrom === 'funding' && transferTo === 'trading'
@@ -479,6 +546,9 @@ function FundingToTradingModal({
             {renderTradingToQuisquisTxSubmitButton}
           </>
         ) : null}
+
+        {transferFrom === 'trading' && transferTo === 'funding'
+          ? renderTradingToFundingTxSubmitButton
           : null}
 
         {/* <Button onClick={handleTrade} fullWidth variant="contained">
