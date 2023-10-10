@@ -23,10 +23,7 @@ import {
 } from '../constants';
 import { useGlobalContext } from '../src/context';
 import { generatePublicKey } from '../src/modules/wallet/zkos';
-import {
-  FundingToTradingModal,
-  TradingAccountList,
-} from '../src/modules/wallet';
+import { TransferModal, TradingAccountList } from '../src/modules/wallet';
 import { generatePublicKeyHexAddress } from '../src/modules/wallet/zkos/accountManagement';
 import { WithdrawModal } from '../src/modules/wallet/components/WithdrawModal';
 import TransactionList from '../src/modules/wallet/components/TransactionList';
@@ -289,7 +286,7 @@ const Wallet = () => {
                   </Tooltip>
 
                   {selectedTransferDialog && hexAddress ? (
-                    <FundingToTradingModal
+                    <TransferModal
                       onClose={handleCloseTransferDialog}
                       open={selectedTransferDialog}
                       twilightAddress={twilightAddress ?? ''}

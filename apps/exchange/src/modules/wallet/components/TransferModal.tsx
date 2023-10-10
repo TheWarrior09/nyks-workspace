@@ -61,7 +61,7 @@ interface FundingToTradingModal {
   twilightAddress: string;
 }
 
-function FundingToTradingModal({
+function TransferModal({
   onClose,
   open,
   twilightAddress,
@@ -559,7 +559,7 @@ function FundingToTradingModal({
   );
 }
 
-export default FundingToTradingModal;
+export default TransferModal;
 
 // const handleTrade = async () => {
 //   const tradingAccount = JSON.stringify({
