@@ -1,25 +1,22 @@
 import {
-  Button,
+  Alert,
   Checkbox,
   Paper,
+  Snackbar,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
+  Typography,
 } from '@mui/material';
 import { useState } from 'react';
-import Long from 'long';
-
 import { useGlobalContext } from '../../../context';
 import {
-  MintBurnTradingBtc,
-  useQueryMintBurnTradingBtc,
-} from '../hooks/useQueryMintBurnTradingBtc';
-import { useTwilightRpcWithCosmjs } from '@nyks-workspace/hooks';
-import { getAccountValue } from '../zkos/accountManagement';
-import TradingToDarkTxModal from './TradingToDarkTxModal';
+  TradingAccountData,
+  useQueryGetTradingAccounts,
+} from '../hooks/useQueryZkos';
 
 interface CustomTableCellProps {
   children: React.ReactNode;
@@ -39,7 +36,7 @@ const CustomTableCell = ({
   );
 };
 
-function truncate(str: string, n: number) {
+export function truncate(str: string, n: number) {
   if (str.length <= n) {
     return str;
   }
@@ -53,69 +50,30 @@ function TradingAccountList({
   twilightAddress: string;
 }): JSX.Element {
   const [selectedRow, setSelectedRow] = useState<{
-    amount: number;
-    account: string;
-  }>({ account: '', amount: 0 });
-  const [btcBalances, setBtcBalances] = useState<{
-    [accountId: string]: number | null;
-  }>({});
-  const [selectedTransferDialog, setSelectedTransferDialog] = useState(false);
+    amount: number | undefined;
+    address: string;
+  }>({ address: '', amount: undefined });
 
-  const { setEncryptScalar, setQqAccount, setAmount, signature } =
+  const { setEncryptScalar, setTradingAccount, setAmount, signature } =
     useGlobalContext();
-
-  const { mintBurnTradingBtc } = useTwilightRpcWithCosmjs();
 
   if (!signature) throw new Error('signature not found');
 
-  const handleCloseTransferDialog = () => {
-    setSelectedTransferDialog(false);
-  };
-
-  function handleRowClick(row: MintBurnTradingBtc) {
-    setEncryptScalar(row.encryptScalar);
-    setQqAccount(row.qqAccount);
-    setAmount(`${row.btcValue}`);
-    setSelectedRow({ account: row.qqAccount, amount: Number(row.btcValue) });
+  function handleRowClick(row: TradingAccountData) {
+    // if (row.status === 'spent') return;
+    // setEncryptScalar(row.encryptScalar);
+    // setTradingAccount(row.tradingAccount);
+    setSelectedRow((prev) => ({
+      ...prev,
+      address: row.tradingAddress,
+      amount: Number(row.value),
+    }));
   }
 
-  function handleTradingToFundingTransfer({
-    btcValue,
-    encryptScalar,
-    qqAccount,
-    twilightAddress,
-  }: {
-    btcValue: string;
-    encryptScalar: string;
-    qqAccount: string;
-    twilightAddress: string;
-  }) {
-    mintBurnTradingBtc.mutate(
-      {
-        btcValue: Long.fromString(btcValue),
-        encryptScalar: encryptScalar,
-        mintOrBurn: false,
-        qqAccount: qqAccount,
-        twilightAddress: twilightAddress,
-      },
-      {
-        onSuccess() {
-          tradingBtcAccounts.refetch();
-        },
-      }
-    );
-  }
-
-  const tradingBtcAccounts = useQueryMintBurnTradingBtc({
-    twilightAddress,
-  });
-
-  if (
-    tradingBtcAccounts.status === 'loading' &&
-    tradingBtcAccounts.fetchStatus === 'idle'
-  ) {
-    return <>loading...</>;
-  }
+  const tradingAccountsQuery = useQueryGetTradingAccounts(
+    signature,
+    twilightAddress
+  );
 
   return (
     <TableContainer
@@ -133,20 +91,18 @@ function TradingAccountList({
         <TableHead>
           <TableRow>
             <CustomTableCell align="center">Index</CustomTableCell>
-            <CustomTableCell align="center">Account</CustomTableCell>
-            <CustomTableCell align="center">Encryption</CustomTableCell>
+            <CustomTableCell align="center">Address</CustomTableCell>
+            <CustomTableCell align="center">UTXO ID</CustomTableCell>
             <CustomTableCell align="center">Value</CustomTableCell>
+
             <CustomTableCell align="center">Selected</CustomTableCell>
-            <CustomTableCell align="center">Transfer</CustomTableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {tradingBtcAccounts.status === 'success' &&
-            tradingBtcAccounts.data.MintOrBurnTradingBtc.filter(
-              (item) => item.mintOrBurn === true
-            ).map((row, index) => (
+          {tradingAccountsQuery.status === 'success' &&
+            tradingAccountsQuery.data.map((row, index) => (
               <TableRow
-                key={row.qqAccount}
+                key={row.tradingAddress}
                 sx={{
                   '&:last-child td, &:last-child th': { border: 0 },
                   backgroundColor:
@@ -156,91 +112,31 @@ function TradingAccountList({
                   },
                 }}
                 onClick={() => handleRowClick(row)}
-                selected={selectedRow.account === row.qqAccount}
+                selected={selectedRow.address === row.tradingAddress}
                 hover
               >
                 <CustomTableCell align="center">{index + 1}</CustomTableCell>
 
                 <CustomTableCell align="center">
-                  {truncate(row.qqAccount, 20)}
+                  {truncate(row.tradingAddress, 20)}
                 </CustomTableCell>
 
                 <CustomTableCell align="center">
-                  {truncate(row.encryptScalar, 20)}
+                  <TruncatableCopyableText text={row.utxo} maxLength={20} />
+                  {/* {truncate(row.utxo, 20)} */}
                 </CustomTableCell>
 
                 <CustomTableCell align="center">
-                  {/* {row.btcValue} sats */}
-                  {btcBalances[row.qqAccount] ? (
-                    `${btcBalances[row.qqAccount]} sats`
-                  ) : (
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      onClick={async () => {
-                        const balance = await getAccountValue({
-                          signature,
-                          qqAccount: row.qqAccount,
-                          encryptScalar: row.encryptScalar,
-                        });
-
-                        setBtcBalances((prevClickedValues) => ({
-                          ...prevClickedValues,
-                          [row.qqAccount]: Number(balance.balance),
-                        }));
-                      }}
-                    >
-                      Decrypt
-                    </Button>
-                  )}
+                  {`${row.value} sats`}
                 </CustomTableCell>
 
                 <CustomTableCell align="center">
-                  <Checkbox checked={selectedRow.account === row.qqAccount} />
-                </CustomTableCell>
-
-                <CustomTableCell align="center">
-                  <>
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      onClick={() => {
-                        handleTradingToFundingTransfer({
-                          btcValue: row.btcValue,
-                          encryptScalar: row.encryptScalar,
-                          qqAccount: row.qqAccount,
-                          twilightAddress: row.twilightAddress,
-                        });
-                      }}
-                      disabled={mintBurnTradingBtc.status === 'loading'}
-                    >
-                      Trading to funding
-                    </Button>
-
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      onClick={() => {
-                        console.log('dark tx');
-                        setSelectedTransferDialog(true);
-                      }}
-                      //   disabled={mintBurnTradingBtc.status === 'loading'}
-                    >
-                      Dark tx
-                    </Button>
-                  </>
+                  <Checkbox
+                    checked={selectedRow.address === row.tradingAddress}
+                  />
                 </CustomTableCell>
               </TableRow>
             ))}
-
-          {selectedRow.account && selectedTransferDialog ? (
-            <TradingToDarkTxModal
-              fromAccount={selectedRow.account}
-              onClose={handleCloseTransferDialog}
-              open={selectedTransferDialog}
-              totalAmount={selectedRow.amount}
-            />
-          ) : null}
         </TableBody>
       </Table>
     </TableContainer>
@@ -248,3 +144,58 @@ function TradingAccountList({
 }
 
 export default TradingAccountList;
+
+const TruncatableCopyableText = ({
+  text,
+  maxLength,
+}: {
+  text: string;
+  maxLength: number;
+}) => {
+  const [isCopied, setIsCopied] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+
+  const copyText = () => {
+    navigator.clipboard.writeText(text);
+    setIsCopied(true);
+
+    // Reset the copied state after a brief delay (for visual feedback)
+    setTimeout(() => {
+      setIsCopied(false);
+    }, 2000);
+  };
+
+  return (
+    <div>
+      <Typography
+        variant="body2"
+        component="span"
+        style={{
+          cursor: 'pointer',
+          textDecoration: isHovered ? 'underline' : 'none',
+          // color: isHovered ? 'blue' : 'inherit',
+          transition: 'color 0.2s',
+        }}
+        onClick={copyText}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        {truncate(text, maxLength)}
+      </Typography>
+      <Snackbar
+        open={isCopied}
+        autoHideDuration={2000}
+        onClose={() => setIsCopied(false)}
+      >
+        <Alert
+          elevation={6}
+          variant="filled"
+          onClose={() => setIsCopied(false)}
+          severity="success"
+        >
+          UTXO ID Copied!
+        </Alert>
+      </Snackbar>
+    </div>
+  );
+};

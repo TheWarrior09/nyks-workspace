@@ -23,29 +23,28 @@ import {
 } from '../constants';
 import { useGlobalContext } from '../src/context';
 import { generatePublicKey } from '../src/modules/wallet/zkos';
-import {
-  FundingToTradingModal,
-  TradingAccountList,
-} from '../src/modules/wallet';
-import { generateHexAddress } from '../src/modules/wallet/zkos/accountManagement';
-import { useQueryMintBurnTradingBtc } from '../src/modules/wallet/hooks/useQueryMintBurnTradingBtc';
+import { TransferModal, TradingAccountList } from '../src/modules/wallet';
+import { generatePublicKeyHexAddress } from '../src/modules/wallet/zkos/accountManagement';
 import { WithdrawModal } from '../src/modules/wallet/components/WithdrawModal';
+import TransactionList from '../src/modules/wallet/components/TransactionList';
+import { useQueryGetTradingAccounts } from '../src/modules/wallet/hooks/useQueryZkos';
 
 const Wallet = () => {
-  const { hexAddress, setHexAddress, setSignature } = useGlobalContext();
+  const { hexAddress, setHexAddress, setSignature, signature } =
+    useGlobalContext();
 
-  const { getAccountsQuery, keplrConnected, getBtcBalanceOnNYKS } =
-    useKeplrWallet({
-      chainId: CHAIN_ID,
-      tendermintRpc: TENDERMINT_RPC,
-      cosmosRest: COSMOS_REST,
-    });
+  const {
+    getAccountsQuery,
+    keplrConnected,
+    getBtcBalanceOnNYKS,
+    getNyksBalanceOnNYKS,
+  } = useKeplrWallet({
+    chainId: CHAIN_ID,
+    tendermintRpc: TENDERMINT_RPC,
+    cosmosRest: COSMOS_REST,
+  });
 
   const twilightAddress = getAccountsQuery.data?.[0].address;
-
-  const tradingBtcAccounts = useQueryMintBurnTradingBtc({
-    twilightAddress,
-  });
 
   const [selectedTransferDialog, setSelectedTransferDialog] = useState(false);
   const [selectedWithdrawDialog, setSelectedWithdrawDialog] = useState(false);
@@ -71,16 +70,19 @@ const Wallet = () => {
       signature,
     });
 
-    const hexAddress = await generateHexAddress({ publicKey });
+    const hexAddress = await generatePublicKeyHexAddress({ publicKey });
     setHexAddress(hexAddress);
   };
 
+  const tradingAccountsQuery = useQueryGetTradingAccounts(
+    signature ?? '',
+    twilightAddress ?? ''
+  );
+
   const tradingAccountBalance =
-    tradingBtcAccounts.status === 'success' &&
-    tradingBtcAccounts.data.MintOrBurnTradingBtc.filter(
-      (item) => item.mintOrBurn === true
-    ).reduce((accumulator: number, currentValue) => {
-      const btcValue = parseInt(currentValue.btcValue);
+    tradingAccountsQuery.status === 'success' &&
+    tradingAccountsQuery.data.reduce((accumulator: number, currentValue) => {
+      const btcValue = Number(currentValue.value);
       return accumulator + btcValue;
     }, 0);
 
@@ -207,12 +209,16 @@ const Wallet = () => {
                 </Box>
               </Grid>
 
-              <Grid item xs={4}>
-                <>
-                  <Typography variant="h6" color="text.secondary" mt={2} mb={2}>
-                    {getBtcBalanceOnNYKS()} SATS
-                  </Typography>
-                </>
+              <Grid item xs={2}>
+                <Typography variant="h6" color="text.secondary" mt={2} mb={2}>
+                  {getBtcBalanceOnNYKS()} SATS
+                </Typography>
+              </Grid>
+
+              <Grid item xs={2}>
+                <Typography variant="h6" color="text.secondary" mt={2} mb={2}>
+                  {getNyksBalanceOnNYKS()} nyks
+                </Typography>
               </Grid>
 
               <Grid item xs={4}>
@@ -280,9 +286,10 @@ const Wallet = () => {
                   </Tooltip>
 
                   {selectedTransferDialog && hexAddress ? (
-                    <FundingToTradingModal
+                    <TransferModal
                       onClose={handleCloseTransferDialog}
                       open={selectedTransferDialog}
+                      twilightAddress={twilightAddress ?? ''}
                     />
                   ) : null}
 
@@ -307,7 +314,35 @@ const Wallet = () => {
                 Trading Accounts
               </Typography>
 
+              <Button
+                variant="contained"
+                onClick={() => {
+                  console.log('sync');
+                  tradingAccountsQuery.refetch();
+                }}
+                sx={{ mb: 3 }}
+                disabled={tradingAccountsQuery.isFetching}
+              >
+                Sync Accounts
+              </Button>
+
               <TradingAccountList twilightAddress={twilightAddress ?? ''} />
+            </Box>
+          ) : null}
+
+          {hexAddress ? (
+            <Box mt={3}>
+              <Typography
+                variant="h5"
+                gutterBottom
+                component="div"
+                align="left"
+                sx={{ my: 3 }}
+              >
+                Transaction List
+              </Typography>
+
+              <TransactionList twilightAddress={twilightAddress ?? ''} />
             </Box>
           ) : null}
         </Container>

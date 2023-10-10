@@ -87,7 +87,7 @@
     "react-router-dom": "6.11.2",
     "sequelize": "^6.31.1",
     "tslib": "^2.3.0",
-    "zkos-wasm": "^0.1.1",
+    "zkos-wasm": "^0.2.0",
     "zod": "^3.21.4"
   }
 }

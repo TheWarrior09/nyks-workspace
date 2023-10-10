@@ -22,6 +22,12 @@ interface MenuItem {
 
 const menuItems: MenuItem[] = [
   {
+    label: 'Btc Reserve',
+    onClick: () => {
+      router.push(`/btc-reserve`);
+    },
+  },
+  {
     label: 'Exchange',
     onClick: () => {
       router.push(`/trade`);

@@ -1,76 +1,130 @@
-import { ZKOS_ACCOUNT_KEY_LOCAL_STORAGE } from '../../../../constants';
-import { ZkosAccountFromLocalStorage } from './types';
-
-function saveAccountInLocalStorage({
-  tradingAccount,
-  zkosAccount,
-  encryptScalar,
-  amount,
-}: {
+export type AccountLocal = {
   tradingAccount: string;
-  zkosAccount: string;
   encryptScalar: string;
-  amount: number;
-}) {
-  const zkosAccountsFromLocalStorage: ZkosAccountFromLocalStorage[] =
-    JSON.parse(localStorage.getItem(ZKOS_ACCOUNT_KEY_LOCAL_STORAGE) ?? '[]');
-
-  zkosAccountsFromLocalStorage.push({
-    trading_account: tradingAccount,
-    zkos_account_hex: zkosAccount,
-    encrypt_scalar_hex: encryptScalar,
-    amount,
-  });
-
-  localStorage.setItem(
-    ZKOS_ACCOUNT_KEY_LOCAL_STORAGE,
-    JSON.stringify(zkosAccountsFromLocalStorage)
-  );
-}
-
-const getAccountFromLocalStorage = () => {
-  const tradingBtcAccounts: ZkosAccountFromLocalStorage[] = JSON.parse(
-    localStorage.getItem(ZKOS_ACCOUNT_KEY_LOCAL_STORAGE) ?? '[]'
-  );
-
-  return tradingBtcAccounts;
+  tradingAddress: string;
+  btcValue: number | undefined;
+  transactionId: string;
+  transactionType: 'fundingToTrading' | 'tradingToFunding' | 'darkTransaction';
+  height: number;
+  status: 'spent' | 'unSpent';
 };
 
-// async function getTradingAccount(publicKey: string, amount: number) {
-//   const zkos = await import('zkos-wasm');
-//   const tradingQuisquisAccount = zkos.generateChainTradingAccount(
-//     publicKey,
-//     amount
-//   );
+type LocalData = {
+  [x: string]: {
+    accounts: AccountLocal[];
+  };
+};
 
-//   return {
-//     chainTradingAccount: tradingQuisquisAccount,
-//   };
-// }
+const LOCAL_STORAGE_KEY = 'TRADING_ACCOUNTS';
+
+function saveData(data: LocalData) {
+  try {
+    const serializedData = JSON.stringify(data);
+    localStorage.setItem(LOCAL_STORAGE_KEY, serializedData);
+  } catch (error) {
+    console.error('Error saving data:', error);
+  }
+}
+
+const getLocalData = (twilightAddress: string) => {
+  const emptyAccount: LocalData = {
+    [twilightAddress]: { accounts: [] },
+  };
+
+  const localDataString =
+    localStorage.getItem(LOCAL_STORAGE_KEY) || JSON.stringify(emptyAccount);
+
+  const localData: LocalData = JSON.parse(localDataString);
+
+  return localData[twilightAddress]?.accounts
+    ? localData
+    : { ...localData, ...emptyAccount };
+};
+
+export const getAccountList = (twilightAddress: string) => {
+  const localData = getLocalData(twilightAddress);
+  return localData[twilightAddress].accounts;
+};
+
+export const AddNewAccountInLocalData = (
+  { twilightAddress }: { twilightAddress: string },
+  newAccount: AccountLocal[]
+) => {
+  const localData = getLocalData(twilightAddress);
+
+  localData[twilightAddress].accounts =
+    localData[twilightAddress].accounts.concat(newAccount);
+
+  saveData(localData);
+};
+
+export const updateAccountValueInLocalData = ({
+  twilightAddress,
+  tradingAddress,
+  updatedValue,
+}: {
+  twilightAddress: string;
+  tradingAddress: string;
+  updatedValue: number;
+}) => {
+  const localData = getLocalData(twilightAddress);
+
+  console.log('localData', localData);
+
+  localData[twilightAddress].accounts = localData[twilightAddress].accounts.map(
+    (account) => {
+      if (account.tradingAddress === tradingAddress) {
+        return { ...account, btcValue: updatedValue };
+      }
+      return account;
+    }
+  );
+
+  saveData(localData);
+};
+
+export const updateAccountStatusInLocalData = ({
+  twilightAddress,
+  tradingAddress,
+}: {
+  twilightAddress: string;
+  tradingAddress: string;
+}) => {
+  const localData = getLocalData(twilightAddress);
+
+  console.log('localData', localData);
+
+  localData[twilightAddress].accounts = localData[twilightAddress].accounts.map(
+    (account) => {
+      if (account.tradingAddress === tradingAddress) {
+        return { ...account, status: 'spent' as const, btcValue: 0 };
+      }
+      return account;
+    }
+  );
+
+  saveData(localData);
+};
 
 function getTradingAccountDetails(tradingAccount: string) {
-  const parseTradingAccountJson = JSON.parse(tradingAccount);
+  const parseTradingAccount = JSON.parse(tradingAccount);
   return {
-    tradingAccountHex: parseTradingAccountJson.zkos_account_hex,
-    encryptScalarHex: parseTradingAccountJson.encrypt_scalar_hex,
+    tradingAccountHex: parseTradingAccount.trading_account_hex,
+    encryptScalarHex: parseTradingAccount.encrypt_scalar_hex,
   };
 }
 
-// async function getZkosAccount(tradingQuisquisAccount: string) {
-//   const zkos = await import('zkos-wasm');
+function getFundingAccountString({
+  encryptScalarHex,
+  tradingAccountHex,
+}: {
+  tradingAccountHex: string;
+  encryptScalarHex: string;
+}) {
+  return JSON.stringify({
+    trading_account_hex: tradingAccountHex,
+    encrypt_scalar_hex: encryptScalarHex,
+  });
+}
 
-//   const zkosAccount = zkos.fundingToZkosAccount(tradingQuisquisAccount);
-//   const zkosHexAddress = zkos.getHexAddressFromZkosAccount(zkosAccount);
-
-//   return {
-//     zkosAccount,
-//     zkosHexAddress,
-//   };
-// }
-
-export {
-  saveAccountInLocalStorage,
-  // getTradingAccount,
-  getTradingAccountDetails,
-  // getZkosAccount,
-};
+export { getTradingAccountDetails, getFundingAccountString };

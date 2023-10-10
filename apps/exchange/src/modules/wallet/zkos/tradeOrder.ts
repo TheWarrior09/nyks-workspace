@@ -3,17 +3,12 @@ import { getTradingAccountDetails } from './tradingAccount';
 import {
   RELAYER_ORDER_ENDPOINT,
   RELAYER_QUERY_ENDPOINT,
-  ZKOS_API_ENDPOINT,
 } from '../../../../constants';
-import { useMutation } from '@tanstack/react-query';
-import { getZkosAccount } from './accountManagement';
-
-// const submitZkosTransaction = useMutation({
-//   // mutationFn: createTraderOrderZkos,
-//   // mutationFn: createLendOrderZkos,
-//   // mutationFn: queryLendOrderZkos,
-// });
-// console.log('submitZkosTransaction', submitZkosTransaction.data);
+import {
+  getTradingAccountFromFundingAccount,
+  getTradingHexAddressFromAccount,
+} from './accountManagement';
+import { getUtxoForAddress } from './zkosApi';
 
 type OrderType = 'MARKET' | 'LIMIT';
 type OrderStatue =
@@ -49,12 +44,12 @@ async function createTraderOrder({
   const zkos = await import('zkos-wasm');
 
   const { encryptScalarHex } = getTradingAccountDetails(tradingAccount);
-  const { zkosAccount, zkosHexAddress } = await getZkosAccount(tradingAccount);
+  const zkosAccount = await getTradingAccountFromFundingAccount(tradingAccount);
+  const zkosHexAddress = await getTradingHexAddressFromAccount(zkosAccount);
 
   const scriptAddress = zkos.getScriptAddress();
-  const outputFromZkos = zkos.createOutputFromZkosAccount(zkosAccount);
 
-  // const defaultUtxo = zkos.createDefaultUtxo();
+  const outputFromZkos = zkos.createOutputFromTradingAccount(zkosAccount);
 
   const userUtxo = await getUtxoForAddress(JSON.parse(zkosHexAddress));
   if (userUtxo.error) {
@@ -63,7 +58,6 @@ async function createTraderOrder({
 
   const coinTypeInput = zkos.createInputFromOutput(
     outputFromZkos,
-    // defaultUtxo,
     JSON.stringify(userUtxo.result[0]),
     BigInt(amount)
   );
@@ -81,7 +75,7 @@ async function createTraderOrder({
   const zkosOrder = zkos.createZkOSTraderOrder(
     coinTypeInput,
     outputMemo,
-    base64ToUint8Array(signature),
+    signature,
     rScaler,
     BigInt(amount),
     JSON.stringify(accountId),
@@ -177,7 +171,8 @@ async function createQueryTraderOrder({
 
   const zkosOrder = zkos.queryTraderOrderZkos(
     zkosHexAddress,
-    base64ToUint8Array(signature),
+    // base64ToUint8Array(signature),
+    signature,
     JSON.stringify(accountId),
     orderStatus
   );
@@ -225,7 +220,8 @@ async function createCancelTraderOrder({
 
   const zkosOrder = zkos.cancelTraderOrderZkOS(
     zkosHexAddress,
-    base64ToUint8Array(signature),
+    // base64ToUint8Array(signature),
+    signature,
     JSON.stringify(accountId),
     JSON.stringify(UUID),
     orderType,
@@ -278,7 +274,7 @@ async function createExecuteTraderOrder({
 }) {
   const zkos = await import('zkos-wasm');
 
-  const { zkosAccount, zkosHexAddress } = await getZkosAccount(tradingAccount);
+  const zkosHexAddress = await getTradingHexAddressFromAccount(tradingAccount);
 
   // const outputFromZkos = zkos.createOutputFromZkosAccount(zkosAccount);
 
@@ -307,7 +303,7 @@ async function createExecuteTraderOrder({
 
   const zkosOrder = zkos.executeOrderZkOS(
     inputTypeMemo,
-    base64ToUint8Array(signature),
+    signature,
     JSON.stringify(accountId),
     JSON.stringify(UUID),
     orderType,
@@ -341,82 +337,6 @@ async function submitExecuteTraderOrder(queryData: string) {
   return data;
 }
 
-function base64ToUint8Array(base64: string) {
-  const binaryString = atob(base64);
-  const length = binaryString.length;
-  const uint8Array = new Uint8Array(length);
-
-  for (let i = 0; i < length; i++) {
-    uint8Array[i] = binaryString.charCodeAt(i);
-  }
-
-  return uint8Array;
-}
-
-const getUtxoForAddress = async (zkosAddress: string) => {
-  const message = JSON.stringify({
-    jsonrpc: '2.0',
-    method: 'getUtxos',
-    params: [zkosAddress],
-    id: 1,
-  });
-  const { data } = await axios.post(ZKOS_API_ENDPOINT, message, {
-    headers: {
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*',
-    },
-  });
-  return data;
-};
-
-const getAllUtxoForAddress = async (zkosAddress: string) => {
-  const message = JSON.stringify({
-    jsonrpc: '2.0',
-    method: 'allUtxos',
-    params: [zkosAddress],
-    id: 1,
-  });
-  const { data } = await axios.post(ZKOS_API_ENDPOINT, message, {
-    headers: {
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*',
-    },
-  });
-  return data;
-};
-
-const getUtxoOutput = async (utxo: string) => {
-  const message = JSON.stringify({
-    jsonrpc: '2.0',
-    method: 'getOutput',
-    params: [utxo],
-    id: 1,
-  });
-  const { data } = await axios.post(ZKOS_API_ENDPOINT, message, {
-    headers: {
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*',
-    },
-  });
-  return data;
-};
-
-const commitDarkTransaction = async (darkTxHex: string) => {
-  const message = JSON.stringify({
-    jsonrpc: '2.0',
-    method: 'txCommit',
-    params: [darkTxHex],
-    id: 1,
-  });
-  const { data } = await axios.post(ZKOS_API_ENDPOINT, message, {
-    headers: {
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*',
-    },
-  });
-  return data;
-};
-
 export {
   createTraderOrder,
   submitTraderOrder,
@@ -428,7 +348,4 @@ export {
   submitExecuteTraderOrder,
   submitJsonRequest,
   getUtxoForAddress,
-  getAllUtxoForAddress,
-  getUtxoOutput,
-  commitDarkTransaction,
 };
