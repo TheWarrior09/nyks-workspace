@@ -1,5 +1,6 @@
 import { Box } from '@mui/material';
-import { StyledNavbar } from '@nyks-workspace/shared-ui';
+import router from 'next/router';
+import StyledNavbar from './Navbar';
 import { EnvironmentContextProvider } from './context';
 import { FaucetUI } from './faucet-page';
 import { CHAIN_ID, COSMOS_REST, TENDERMINT_RPC } from '../env';
@@ -14,7 +15,10 @@ export function App() {
     {
       label: 'Testnet Explorer',
       onClick: () => {
-        // Handle home click
+        router.push(
+          `https://nyks.twilight-explorer.com/`,
+          'https://nyks.twilight-explorer.com/'
+        );
       },
     },
   ];
