@@ -10,7 +10,7 @@ import {
   Typography,
 } from '@mui/material';
 import { usePostRequestFaucet } from './hooks';
-import { FAUCET_ENDPOINT } from '../../env';
+import { FAUCET_ENDPOINT, TRANSFER_AMOUNT } from '../../env';
 
 interface RequestSectionProps {
   keplrConnected: boolean;
@@ -101,7 +101,7 @@ const RequestSection = ({
           </Typography>
 
           <Typography variant="body1" align="center" mt={2}>
-            Get 1000 NYKS testnet tokens from Faucet
+            Get {TRANSFER_AMOUNT} NYKS testnet tokens from Faucet
           </Typography>
 
           <Box

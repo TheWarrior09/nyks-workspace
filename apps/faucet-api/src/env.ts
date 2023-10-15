@@ -14,6 +14,7 @@ const envSchema = z.object({
   DB_NAME: z.string().nonempty(),
   DB_USER: z.string().nonempty(),
   DB_PASSWORD: z.string().nonempty(),
+  TRANSFER_AMOUNT: z.coerce.number().default(10000),
 });
 
 export const env = envSchema.parse(process.env);

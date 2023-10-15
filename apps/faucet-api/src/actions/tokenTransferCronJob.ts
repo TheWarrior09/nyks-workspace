@@ -1,10 +1,12 @@
 import { CronJob } from 'cron';
 import { getAllPendingRequests } from '../models';
 import { faucetWalletDetails, transferMultiple } from './faucet';
+import { env } from '../env';
+
+const { TRANSFER_AMOUNT } = env;
 
 export const tokenTransferCronJob = new CronJob('*/5 * * * * *', tokenTransfer);
 
-const TRANSFER_AMOUNT = 1000;
 let isFetching = false;
 async function tokenTransfer() {
   try {
