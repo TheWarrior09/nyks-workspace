@@ -1,5 +1,4 @@
 import { Box } from '@mui/material';
-import router from 'next/router';
 import StyledNavbar from './Navbar';
 import { EnvironmentContextProvider } from './context';
 import { FaucetUI } from './faucet-page';
@@ -15,10 +14,7 @@ export function App() {
     {
       label: 'Testnet Explorer',
       onClick: () => {
-        router.push(
-          `https://nyks.twilight-explorer.com/`,
-          'https://nyks.twilight-explorer.com/'
-        );
+        window.open('https://nyks.twilight-explorer.com/', '_blank');
       },
     },
   ];
