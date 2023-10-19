@@ -2,7 +2,7 @@ import { StrictMode } from 'react';
 import { AppProps } from 'next/app';
 import router from 'next/router';
 import { ThemeProvider } from '@emotion/react';
-import { CssBaseline } from '@mui/material';
+import { Alert, CssBaseline, Snackbar } from '@mui/material';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StyledNavbar } from '@nyks-workspace/shared-ui';
 import theme from '../theme';
@@ -12,6 +12,11 @@ import {
   useGlobalContext,
 } from '../src/context';
 import { CHAIN_ID, COSMOS_REST, TENDERMINT_RPC } from '../constants';
+import {
+  SnackbarContextProvider,
+  useSnackbarContext,
+  useSnackbarUpdateContext,
+} from '../src/context/snackbarContext';
 
 const queryClient = new QueryClient();
 
@@ -36,7 +41,7 @@ const menuItems: MenuItem[] = [
   {
     label: 'Testnet Explorer',
     onClick: () => {
-      router.push(`/explorer`);
+      window.open('https://nyks.twilight-explorer.com/', '_blank');
     },
   },
   {
@@ -56,8 +61,12 @@ function CustomApp({ Component, pageProps }: AppProps) {
             <CssBaseline />
             <main className="app">
               <EnvironmentContextProvider>
-                <Navbar />
-                <Component {...pageProps} />
+                <SnackbarContextProvider>
+                  <Navbar />
+                  <Component {...pageProps} />
+
+                  <SnackbarComponent />
+                </SnackbarContextProvider>
               </EnvironmentContextProvider>
             </main>
           </GlobalContextProvider>
@@ -80,5 +89,28 @@ const Navbar = () => {
       tendermintRpc={TENDERMINT_RPC}
       hexAddress={hexAddress ?? ''}
     />
+  );
+};
+
+const SnackbarComponent = () => {
+  const { state } = useSnackbarContext();
+  const { handleSnackbarClose } = useSnackbarUpdateContext();
+
+  return (
+    <Snackbar
+      open={state.open}
+      autoHideDuration={state.duration}
+      onClose={handleSnackbarClose}
+      anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+    >
+      <Alert
+        elevation={6}
+        variant="filled"
+        onClose={handleSnackbarClose}
+        severity="success"
+      >
+        {state.message}
+      </Alert>
+    </Snackbar>
   );
 };
