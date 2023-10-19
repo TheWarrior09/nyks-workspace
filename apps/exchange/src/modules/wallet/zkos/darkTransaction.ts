@@ -13,6 +13,7 @@ import {
   getAccountValueFromOutput,
   createQuisquisTransaction,
   createDarkTransaction,
+  getInputFromOutput,
 } from './accountManagement';
 import {
   AddNewAccountInLocalData,
@@ -151,20 +152,13 @@ export async function darkTransactionSingle({
   const zkos = await import('zkos-wasm');
 
   const utxos = await getUtxoForAddress(fromAddress);
-
   const utxoString = JSON.stringify(utxos.result[0]);
-
   const utxoHex = await getUtxoHex(utxoString);
 
   const output = await getUtxoOutput(utxoHex);
-
   const outputString = JSON.stringify(output.result);
 
-  const coinTypeInput = zkos.createInputFromOutput(
-    outputString,
-    utxoString,
-    BigInt(0)
-  );
+  const coinTypeInput = await getInputFromOutput(outputString, utxoString, 0);
 
   let receiver: string;
 
@@ -266,11 +260,7 @@ export async function quisquisTransactionSingle({
 
   const outputString = JSON.stringify(output.result);
 
-  const coinTypeInput = zkos.createInputFromOutput(
-    outputString,
-    utxoString,
-    BigInt(0)
-  );
+  const coinTypeInput = await getInputFromOutput(outputString, utxoString, 0);
 
   let receiver: string;
 
@@ -363,11 +353,7 @@ export async function burnTransactionSingle({
 
   const outputString = JSON.stringify(output.result);
 
-  const coinTypeInput = zkos.createInputFromOutput(
-    outputString,
-    utxoString,
-    BigInt(0)
-  );
+  const coinTypeInput = await getInputFromOutput(outputString, utxoString, 0);
 
   // const darkTxSingleJson = zkos.darkTransactionSingle(
   //   signature,
@@ -420,10 +406,10 @@ export async function burnTransactionSingle({
 
   const outputString1 = JSON.stringify(output1.result);
 
-  const coinTypeInput1 = zkos.createInputFromOutput(
+  const coinTypeInput1 = await getInputFromOutput(
     outputString1,
     utxoString1,
-    BigInt(0)
+    0
   );
 
   const burnTx = zkos.createBurnMessageTransaction(

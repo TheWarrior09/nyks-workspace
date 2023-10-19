@@ -157,6 +157,15 @@ export async function addressMonitoring(signature: string, utxos: string) {
   return zkos.coinAddressMonitoring(utxos, signature);
 }
 
+export async function getInputFromOutput(
+  output: string,
+  utxo: string,
+  withdrawAmount: number
+) {
+  const zkos = await import('zkos-wasm');
+  return zkos.createInputFromOutput(output, utxo, BigInt(withdrawAmount));
+}
+
 export async function createDarkTransaction({
   signature,
   sender,
