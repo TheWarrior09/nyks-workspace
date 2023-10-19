@@ -1,7 +1,6 @@
 import {
   Box,
   Button,
-  CircularProgress,
   Container,
   Grid,
   Skeleton,
@@ -24,10 +23,9 @@ import {
 } from '../constants';
 import { useGlobalContext } from '../src/context';
 import { generatePublicKey } from '../src/modules/wallet/zkos';
-import { TransferModal, TradingAccountList } from '../src/modules/wallet';
+import { TradingAccount, TransferModal } from '../src/modules/wallet';
 import { generatePublicKeyHexAddress } from '../src/modules/wallet/zkos/accountManagement';
 import { WithdrawModal } from '../src/modules/wallet/components/WithdrawModal';
-import TransactionList from '../src/modules/wallet/components/TransactionList';
 import { useQueryGetTradingAccounts } from '../src/modules/wallet/hooks/useQueryZkos';
 
 const Wallet = () => {
@@ -303,53 +301,7 @@ const Wallet = () => {
             </Grid>
           </Box>
 
-          {hexAddress ? (
-            <Box mt={3}>
-              <Typography
-                variant="h5"
-                gutterBottom
-                component="div"
-                align="left"
-                sx={{ my: 3 }}
-              >
-                Trading Accounts{' '}
-                {tradingAccountsQuery.status === 'success' &&
-                tradingAccountsQuery.fetchStatus === 'fetching' ? (
-                  <CircularProgress size={20} />
-                ) : null}
-              </Typography>
-
-              <Button
-                variant="contained"
-                onClick={() => {
-                  console.log('sync');
-                  tradingAccountsQuery.refetch();
-                }}
-                sx={{ mb: 3 }}
-                disabled={tradingAccountsQuery.isFetching}
-              >
-                Sync Accounts
-              </Button>
-
-              <TradingAccountList twilightAddress={twilightAddress ?? ''} />
-            </Box>
-          ) : null}
-
-          {hexAddress ? (
-            <Box mt={3}>
-              <Typography
-                variant="h5"
-                gutterBottom
-                component="div"
-                align="left"
-                sx={{ my: 3 }}
-              >
-                Transaction List
-              </Typography>
-
-              <TransactionList twilightAddress={twilightAddress ?? ''} />
-            </Box>
-          ) : null}
+          <TradingAccount />
         </Container>
       ) : (
         <Container>
