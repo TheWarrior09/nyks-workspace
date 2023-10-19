@@ -100,43 +100,45 @@ function TradingAccountList({
         </TableHead>
         <TableBody>
           {tradingAccountsQuery.status === 'success' &&
-            tradingAccountsQuery.data.map((row, index) => (
-              <TableRow
-                key={row.tradingAddress}
-                sx={{
-                  '&:last-child td, &:last-child th': { border: 0 },
-                  backgroundColor:
-                    index % 2 === 0 ? 'action.hover' : 'background.paper',
-                  '&:hover': {
-                    backgroundColor: 'action.selected',
-                  },
-                }}
-                onClick={() => handleRowClick(row)}
-                selected={selectedRow.address === row.tradingAddress}
-                hover
-              >
-                <CustomTableCell align="center">{index + 1}</CustomTableCell>
+            tradingAccountsQuery.data
+              .filter((row) => Number(row.value) !== 0)
+              .map((row, index) => (
+                <TableRow
+                  key={row.tradingAddress}
+                  sx={{
+                    '&:last-child td, &:last-child th': { border: 0 },
+                    backgroundColor:
+                      index % 2 === 0 ? 'action.hover' : 'background.paper',
+                    '&:hover': {
+                      backgroundColor: 'action.selected',
+                    },
+                  }}
+                  onClick={() => handleRowClick(row)}
+                  selected={selectedRow.address === row.tradingAddress}
+                  hover
+                >
+                  <CustomTableCell align="center">{index + 1}</CustomTableCell>
 
-                <CustomTableCell align="center">
-                  {truncate(row.tradingAddress, 20)}
-                </CustomTableCell>
+                  <CustomTableCell align="center">
+                    {truncate(row.tradingAddress, 20)}
+                  </CustomTableCell>
 
-                <CustomTableCell align="center">
-                  <TruncatableCopyableText text={row.utxo} maxLength={20} />
-                  {/* {truncate(row.utxo, 20)} */}
-                </CustomTableCell>
+                  <CustomTableCell align="center">
+                    <TruncatableCopyableText text={row.utxo} maxLength={20} />
+                    {/* {truncate(row.utxo, 20)} */}
+                  </CustomTableCell>
 
-                <CustomTableCell align="center">
-                  {`${row.value} sats`}
-                </CustomTableCell>
+                  <CustomTableCell align="center">
+                    {`${row.value} sats`}
+                  </CustomTableCell>
 
-                <CustomTableCell align="center">
-                  <Checkbox
-                    checked={selectedRow.address === row.tradingAddress}
-                  />
-                </CustomTableCell>
-              </TableRow>
-            ))}
+                  <CustomTableCell align="center">
+                    <Checkbox
+                      checked={selectedRow.address === row.tradingAddress}
+                    />
+                  </CustomTableCell>
+                </TableRow>
+              ))}
         </TableBody>
       </Table>
     </TableContainer>
