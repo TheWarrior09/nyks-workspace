@@ -179,15 +179,6 @@ export async function darkTransactionSingle({
     receiver = toAddress;
   }
 
-  // const darkTxSingleJson = zkos.darkTransactionSingle(
-  //   signature,
-  //   coinTypeInput,
-  //   receiver,
-  //   BigInt(amountSend),
-  //   toAddressType === 'address' ? false : true,
-  //   BigInt(amountAvailable - amountSend)
-  // );
-
   const darkTxSingleJson = await createDarkTransaction({
     amount: amountSend,
     receiver: receiver,
@@ -203,33 +194,9 @@ export async function darkTransactionSingle({
 
   const txResponse = await commitDarkTransaction(darkTxSingle);
 
-  const txHash = JSON.parse(txResponse.result).txHash;
+  const txHash: string = JSON.parse(txResponse.result).txHash;
 
-  txHash &&
-    updateAccountStatusInLocalData({
-      twilightAddress,
-      tradingAddress: fromAddress,
-    });
-
-  await delay(5000);
-
-  const updatedAddresses = await getUpdatedAddressesFromTx(
-    signature,
-    darkTxSingle
-  );
-
-  AddNewAccountInLocalData(
-    { twilightAddress },
-    JSON.parse(updatedAddresses).map((item: string) => ({
-      tradingAccount: '',
-      encryptScalar: '',
-      tradingAddress: item,
-      transactionId: txHash,
-      transactionType: 'darkTransaction',
-      status: 'unSpend',
-      height: 0,
-    }))
-  );
+  return txHash;
 }
 
 export async function quisquisTransactionSingle({
@@ -302,31 +269,7 @@ export async function quisquisTransactionSingle({
 
   const txHash = JSON.parse(txResponse.result).txHash;
 
-  txHash &&
-    updateAccountStatusInLocalData({
-      twilightAddress,
-      tradingAddress: fromAddress,
-    });
-
-  await delay(5000);
-
-  const updatedAddresses = await getUpdatedAddressesFromTx(
-    signature,
-    quisquisTxSingle
-  );
-
-  AddNewAccountInLocalData(
-    { twilightAddress },
-    JSON.parse(updatedAddresses).map((item: string) => ({
-      tradingAccount: '',
-      encryptScalar: '',
-      tradingAddress: item,
-      transactionId: txHash,
-      transactionType: 'darkTransaction',
-      status: 'unSpend',
-      height: 0,
-    }))
-  );
+  return txHash;
 }
 
 export async function burnTransactionSingle({
@@ -355,15 +298,6 @@ export async function burnTransactionSingle({
   const outputString = JSON.stringify(output.result);
 
   const coinTypeInput = await getInputFromOutput(outputString, utxoString, 0);
-
-  // const darkTxSingleJson = zkos.darkTransactionSingle(
-  //   signature,
-  //   coinTypeInput,
-  //   toAddress,
-  //   BigInt(burnAmount),
-  //   false,
-  //   BigInt(0)
-  // );
 
   const darkTxSingleJson = await createDarkTransaction({
     amount: burnAmount,
@@ -437,7 +371,7 @@ export async function burnTransactionSingle({
   return { tradingAccountHex, encryptScalarHex: encrypt_scalar_hex };
 }
 
-function delay(ms: number) {
+export function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
