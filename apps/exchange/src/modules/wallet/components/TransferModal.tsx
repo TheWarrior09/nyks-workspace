@@ -44,6 +44,8 @@ import {
   TradingAccountData,
   useQueryGetTradingAccounts,
 } from '../hooks/useQueryZkos';
+import { delay } from '../zkos/darkTransaction';
+import { useSnackbarUpdateContext } from '../../../context/snackbarContext';
 // import { createTraderOrder, getZkosAccount } from '../zkos';
 // import {
 //   createCancelTraderOrder,
@@ -76,6 +78,8 @@ function TransferModal({
   const [toAddressType, setToAddressType] = useState<'address' | 'output'>(
     'address'
   );
+
+  const { handleSnackbarOpen } = useSnackbarUpdateContext();
 
   const broadcastDarkTransactionSingle = useBroadcastDarkTransactionSingle();
   const broadcastQuisquisTransactionSingle =
@@ -164,6 +168,13 @@ function TransferModal({
     });
 
     onClose();
+    handleSnackbarOpen({
+      open: true,
+      message: 'Successfully broadcasted dark transaction',
+      duration: 7000,
+    });
+    await delay(7000);
+    await tradingAccountsQuery.refetch();
   };
 
   const handleTradingToQuisquisTxSubmit = async () => {
@@ -185,6 +196,13 @@ function TransferModal({
     });
 
     onClose();
+    handleSnackbarOpen({
+      open: true,
+      message: 'Successfully broadcasted quisquis transaction',
+      duration: 7000,
+    });
+    await delay(7000);
+    await tradingAccountsQuery.refetch();
   };
 
   const handleTradingToFundingTxSubmit = async () => {
@@ -222,6 +240,13 @@ function TransferModal({
     );
 
     onClose();
+    handleSnackbarOpen({
+      open: true,
+      message: 'Successfully broadcasted trading to funding transaction',
+      duration: 7000,
+    });
+    await delay(7000);
+    await tradingAccountsQuery.refetch();
   };
 
   const handleFundingToTradingSubmit = async () => {
@@ -273,6 +298,13 @@ function TransferModal({
     );
 
     onClose();
+    handleSnackbarOpen({
+      open: true,
+      message: 'Successfully funded trading account',
+      duration: 7000,
+    });
+    await delay(7000);
+    await tradingAccountsQuery.refetch();
   };
 
   const renderToAddressType = (
