@@ -34,7 +34,7 @@ import {
 } from '../zkos';
 import { useTwilightRpcWithCosmjs } from '@nyks-workspace/hooks';
 import Long from 'long';
-import { truncate } from './TradingAccountList';
+import { truncate } from './TradingAccount/TradingAccountList';
 import {
   useBroadcastBurnTransaction,
   useBroadcastDarkTransactionSingle,

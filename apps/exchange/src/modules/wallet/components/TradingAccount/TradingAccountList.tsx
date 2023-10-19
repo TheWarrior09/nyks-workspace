@@ -12,11 +12,11 @@ import {
   Typography,
 } from '@mui/material';
 import { useState } from 'react';
-import { useGlobalContext } from '../../../context';
+import { useGlobalContext } from '../../../../context';
 import {
   TradingAccountData,
   useQueryGetTradingAccounts,
-} from '../hooks/useQueryZkos';
+} from '../../hooks/useQueryZkos';
 
 interface CustomTableCellProps {
   children: React.ReactNode;

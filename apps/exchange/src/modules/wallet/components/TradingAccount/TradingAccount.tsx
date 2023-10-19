@@ -1,6 +1,6 @@
 import { Box, Typography, CircularProgress, Button } from '@mui/material';
-import TradingAccountList from '../TradingAccountList';
-import TransactionList from '../TransactionList';
+import TradingAccountList from './TradingAccountList';
+import TransactionList from './TransactionList';
 import { useKeplrWallet } from '@nyks-workspace/hooks';
 import {
   CHAIN_ID,

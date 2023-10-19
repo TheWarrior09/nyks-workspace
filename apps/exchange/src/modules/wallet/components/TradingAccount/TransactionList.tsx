@@ -8,9 +8,9 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
-import { useQueryGetTradingAccounts } from '../hooks/useQueryZkos';
-import { useGlobalContext } from '../../../context';
-import { NYKS_EXPLORER } from '../../../../constants';
+import { useQueryGetTradingAccounts } from '../../hooks/useQueryZkos';
+import { useGlobalContext } from '../../../../context';
+import { NYKS_EXPLORER } from '../../../../../constants';
 
 interface CustomTableCellProps {
   children: React.ReactNode;
