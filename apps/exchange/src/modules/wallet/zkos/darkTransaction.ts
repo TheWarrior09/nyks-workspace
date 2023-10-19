@@ -13,6 +13,7 @@ import {
   getAccountValueFromOutput,
   createQuisquisTransaction,
   createDarkTransaction,
+  createBurnTransaction,
   getInputFromOutput,
 } from './accountManagement';
 import {
@@ -412,13 +413,13 @@ export async function burnTransactionSingle({
     0
   );
 
-  const burnTx = zkos.createBurnMessageTransaction(
-    coinTypeInput1,
-    BigInt(burnAmount),
+  const burnTx = await createBurnTransaction({
+    coinTypeInput: coinTypeInput1,
+    burnAmount,
     encrypt_scalar_hex,
     signature,
-    toAddress
-  );
+    toAddress,
+  });
 
   console.log('burnTx', burnTx);
 
@@ -486,13 +487,3 @@ export const getAddressValue = async (signature: string, address: string) => {
 
   return value;
 };
-
-// Can you explain in more detail how Quisquis addresses the privacy issues in existing cryptocurrencies?
-
-// How does Quisquis ensure theft prevention and maintain anonymity in transactions?
-
-// What are the limitations of the Quisquis design?
-
-// Can you provide more information about the updatable keys and zero-knowledge arguments used in Quisquis?
-
-// Are there any other notable proposals or designs for anonymous cryptocurrencies besides Quisquis?

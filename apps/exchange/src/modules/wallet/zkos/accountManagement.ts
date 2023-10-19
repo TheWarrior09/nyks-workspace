@@ -221,6 +221,30 @@ export async function createQuisquisTransaction({
   );
 }
 
+export async function createBurnTransaction({
+  coinTypeInput,
+  burnAmount,
+  encrypt_scalar_hex,
+  signature,
+  toAddress,
+}: {
+  coinTypeInput: string;
+  burnAmount: number;
+  encrypt_scalar_hex: string;
+  signature: string;
+  toAddress: string;
+}) {
+  const zkos = await import('zkos-wasm');
+
+  return zkos.createBurnMessageTransaction(
+    coinTypeInput,
+    BigInt(burnAmount),
+    encrypt_scalar_hex,
+    signature,
+    toAddress
+  );
+}
+
 export {
   generatePublicKey,
   generatePublicKeyHexAddress,
