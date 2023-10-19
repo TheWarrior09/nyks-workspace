@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  CircularProgress,
   Container,
   Grid,
   Skeleton,
@@ -311,7 +312,11 @@ const Wallet = () => {
                 align="left"
                 sx={{ my: 3 }}
               >
-                Trading Accounts
+                Trading Accounts{' '}
+                {tradingAccountsQuery.status === 'success' &&
+                tradingAccountsQuery.fetchStatus === 'fetching' ? (
+                  <CircularProgress size={20} />
+                ) : null}
               </Typography>
 
               <Button
