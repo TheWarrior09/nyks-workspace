@@ -1,8 +1,6 @@
 import {
-  commitBurnTransaction,
   commitDarkTransaction,
   getUtxoForAddress,
-  getUtxoFromDB,
   getUtxoOutput,
 } from '../zkosApi';
 import {
@@ -11,15 +9,14 @@ import {
   generateZeroTradingAccountFromHexAddress,
   getUpdatedAddressesFromTx,
   getAccountValueFromOutput,
-  createQuisquisTransaction,
   createDarkTransaction,
-  createBurnTransaction,
   getInputFromOutput,
 } from '../accountManagement';
 import {
   AddNewAccountInLocalData,
   updateAccountStatusInLocalData,
 } from '../tradingAccount';
+import { delay } from '../../../../utils';
 
 export const convertToJsonString = (jsObject: unknown) => {
   return JSON.stringify(jsObject);
@@ -197,182 +194,6 @@ export async function darkTransaction({
   const txHash: string = JSON.parse(txResponse.result).txHash;
 
   return txHash;
-}
-
-export async function quisquisTransaction({
-  amountSend,
-  amountAvailable,
-  signature,
-  fromAddress,
-  toAddress,
-  toAddressType,
-  twilightAddress,
-}: {
-  signature: string;
-  twilightAddress: string;
-  fromAddress: string;
-  toAddress: string;
-  toAddressType: 'address' | 'output';
-  amountAvailable: number;
-  amountSend: number;
-}) {
-  const zkos = await import('zkos-wasm');
-
-  const utxos = await getUtxoForAddress(fromAddress);
-
-  const utxoString = JSON.stringify(utxos.result[0]);
-
-  const utxoHex = await getUtxoHex(utxoString);
-
-  const output = await getUtxoOutput(utxoHex);
-
-  const outputString = JSON.stringify(output.result);
-
-  const coinTypeInput = await getInputFromOutput(outputString, utxoString, 0);
-
-  let receiver: string;
-
-  if (toAddressType === 'output') {
-    const receiverOutput = await getUtxoOutput(toAddress);
-
-    const receiverOutputString = JSON.stringify(receiverOutput.result);
-
-    const receiverUtxo = zkos.createUtxoFromHex(toAddress);
-
-    receiver = zkos.createInputFromOutput(
-      receiverOutputString,
-      receiverUtxo,
-      BigInt(0)
-    );
-  } else {
-    receiver = toAddress;
-  }
-
-  const allUtxos = await getUtxoFromDB();
-
-  const quisquisTxSingle = await createQuisquisTransaction({
-    signature,
-    sender: coinTypeInput,
-    receiver,
-    amount: amountSend,
-    type: toAddressType,
-    senderUpdatedBalance: amountAvailable - amountSend,
-    anonymitySet: zkos.selectAnonymityAccounts(
-      allUtxos.result.result,
-      coinTypeInput
-    ),
-  });
-
-  console.log('quisquisTxSingle', quisquisTxSingle);
-
-  const txResponse = await commitDarkTransaction(quisquisTxSingle);
-
-  const txHash = JSON.parse(txResponse.result).txHash;
-
-  return txHash;
-}
-
-export async function burnTransaction({
-  burnAmount,
-  signature,
-  fromAddress,
-  toAddress,
-  twilightAddress,
-}: {
-  signature: string;
-  twilightAddress: string;
-  fromAddress: string;
-  toAddress: string;
-  burnAmount: number;
-}) {
-  const zkos = await import('zkos-wasm');
-
-  const utxos = await getUtxoForAddress(fromAddress);
-
-  const utxoString = JSON.stringify(utxos.result[0]);
-
-  const utxoHex = await getUtxoHex(utxoString);
-
-  const output = await getUtxoOutput(utxoHex);
-
-  const outputString = JSON.stringify(output.result);
-
-  const coinTypeInput = await getInputFromOutput(outputString, utxoString, 0);
-
-  const darkTxSingleJson = await createDarkTransaction({
-    amount: burnAmount,
-    receiver: toAddress,
-    sender: coinTypeInput,
-    senderUpdatedBalance: 0,
-    signature,
-    type: 'address',
-  });
-
-  const { tx: darkTxSingle, encrypt_scalar_hex } = JSON.parse(darkTxSingleJson);
-
-  console.log('darkTxSingle', darkTxSingle);
-  console.log('encrypt_scalar_hex', encrypt_scalar_hex);
-
-  const darkTxResponse = await commitDarkTransaction(darkTxSingle);
-  console.log('darkTxResponse', darkTxResponse);
-  const txHash = JSON.parse(darkTxResponse.result).txHash;
-
-  txHash &&
-    updateAccountStatusInLocalData({
-      twilightAddress,
-      tradingAddress: fromAddress,
-    });
-
-  await delay(10000);
-
-  const updatedAddresses = await getUpdatedAddressesFromTx(
-    signature,
-    darkTxSingle
-  );
-
-  const updatedReceiverAddress = JSON.parse(updatedAddresses)[1];
-  const utxos1 = await getUtxoForAddress(updatedReceiverAddress);
-
-  const utxoString1 = JSON.stringify(utxos1.result[0]);
-
-  const utxoHex1 = await getUtxoHex(utxoString1);
-
-  const output1 = await getUtxoOutput(utxoHex1);
-
-  const outputString1 = JSON.stringify(output1.result);
-
-  const coinTypeInput1 = await getInputFromOutput(
-    outputString1,
-    utxoString1,
-    0
-  );
-
-  const burnTx = await createBurnTransaction({
-    coinTypeInput: coinTypeInput1,
-    burnAmount,
-    encrypt_scalar_hex,
-    signature,
-    toAddress,
-  });
-
-  console.log('burnTx', burnTx);
-
-  const burnTxResponse = await commitBurnTransaction(burnTx, twilightAddress);
-
-  console.log('burnTxResponse', burnTxResponse);
-
-  await delay(5000);
-
-  const tradingAccountHex = zkos.createTradingAccountHexFromOutput(
-    outputString1,
-    toAddress
-  );
-
-  return { tradingAccountHex, encryptScalarHex: encrypt_scalar_hex };
-}
-
-export function delay(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 const getAddressUtxo = async (address: string) => {
