@@ -11,7 +11,6 @@ import {
   createBurnTransaction,
   getInputFromOutput,
 } from '../accountManagement';
-import { updateAccountStatusInLocalData } from '../tradingAccount';
 import { delay } from '../../../../utils';
 
 export async function burnTransaction({
@@ -59,11 +58,7 @@ export async function burnTransaction({
   console.log('darkTxResponse', darkTxResponse);
   const txHash = JSON.parse(darkTxResponse.result).txHash;
 
-  txHash &&
-    updateAccountStatusInLocalData({
-      twilightAddress,
-      tradingAddress: fromAddress,
-    });
+  console.log('darkTxHash', txHash);
 
   await delay(10000);
 
@@ -97,7 +92,7 @@ export async function burnTransaction({
     toAddress,
   });
 
-  console.log('burnTx', burnTx);
+  console.log('burnTxHash', burnTx);
 
   const burnTxResponse = await commitBurnTransaction(burnTx, twilightAddress);
 

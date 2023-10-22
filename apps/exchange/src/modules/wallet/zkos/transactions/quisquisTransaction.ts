@@ -17,10 +17,8 @@ export async function quisquisTransaction({
   fromAddress,
   toAddress,
   toAddressType,
-  twilightAddress,
 }: {
   signature: string;
-  twilightAddress: string;
   fromAddress: string;
   toAddress: string;
   toAddressType: 'address' | 'output';

@@ -158,7 +158,6 @@ function TransferModal({
 
     await broadcastDarkTransactionSingle.mutateAsync({
       signature,
-      twilightAddress,
       fromAddress: senderAddress,
       toAddress: receiverAddress,
       toAddressType: toAddressType,
@@ -186,7 +185,6 @@ function TransferModal({
 
     await broadcastQuisquisTransactionSingle.mutateAsync({
       signature,
-      twilightAddress,
       fromAddress: senderAddress,
       toAddress: receiverAddress,
       toAddressType: toAddressType,
