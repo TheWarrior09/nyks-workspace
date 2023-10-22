@@ -37,8 +37,8 @@ import Long from 'long';
 import { truncate } from './TradingAccount/TradingAccountList';
 import {
   useBroadcastBurnTransaction,
-  useBroadcastDarkTransactionSingle,
-  useBroadcastQuisquisTransactionSingle,
+  useBroadcastDarkTransaction,
+  useBroadcastQuisquisTransaction,
 } from '../hooks/useBroadcastTransaction';
 import {
   TradingAccountData,
@@ -81,9 +81,8 @@ function TransferModal({
 
   const { handleSnackbarOpen } = useSnackbarUpdateContext();
 
-  const broadcastDarkTransactionSingle = useBroadcastDarkTransactionSingle();
-  const broadcastQuisquisTransactionSingle =
-    useBroadcastQuisquisTransactionSingle();
+  const broadcastDarkTransactionSingle = useBroadcastDarkTransaction();
+  const broadcastQuisquisTransactionSingle = useBroadcastQuisquisTransaction();
   const broadcastBurnTransaction = useBroadcastBurnTransaction();
 
   const { mintBurnTradingBtc } = useTwilightRpcWithCosmjs();

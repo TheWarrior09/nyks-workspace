@@ -1,24 +1,24 @@
 import { useMutation } from '@tanstack/react-query';
 import {
-  burnTransactionSingle,
-  darkTransactionSingle,
-  quisquisTransactionSingle,
+  burnTransaction,
+  darkTransaction,
+  quisquisTransaction,
 } from '../zkos/transactions';
 
-export const useBroadcastDarkTransactionSingle = () => {
+export const useBroadcastDarkTransaction = () => {
   return useMutation({
-    mutationFn: darkTransactionSingle,
+    mutationFn: darkTransaction,
   });
 };
 
-export const useBroadcastQuisquisTransactionSingle = () => {
+export const useBroadcastQuisquisTransaction = () => {
   return useMutation({
-    mutationFn: quisquisTransactionSingle,
+    mutationFn: quisquisTransaction,
   });
 };
 
 export const useBroadcastBurnTransaction = () => {
   return useMutation({
-    mutationFn: burnTransactionSingle,
+    mutationFn: burnTransaction,
   });
 };

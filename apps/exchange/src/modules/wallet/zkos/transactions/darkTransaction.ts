@@ -25,7 +25,7 @@ export const convertToJsonString = (jsObject: unknown) => {
   return JSON.stringify(jsObject);
 };
 
-export async function darkTransaction({
+export async function darkTransactionMultiple({
   amountSend,
   amountAvailable,
   signature,
@@ -133,7 +133,7 @@ export async function darkTransaction({
   console.log('fromAddress value', fromAddressValue);
 }
 
-export async function darkTransactionSingle({
+export async function darkTransaction({
   amountSend,
   amountAvailable,
   signature,
@@ -199,7 +199,7 @@ export async function darkTransactionSingle({
   return txHash;
 }
 
-export async function quisquisTransactionSingle({
+export async function quisquisTransaction({
   amountSend,
   amountAvailable,
   signature,
@@ -272,7 +272,7 @@ export async function quisquisTransactionSingle({
   return txHash;
 }
 
-export async function burnTransactionSingle({
+export async function burnTransaction({
   burnAmount,
   signature,
   fromAddress,
