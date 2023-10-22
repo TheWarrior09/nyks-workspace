@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { getUtxoFromDB } from '../zkos/zkosApi';
 import { addressMonitoring, getTxIDFromUTXO } from '../zkos';
-import { getAddressValue, getAddressUtxoHex } from '../zkos/darkTransaction';
+import { getAddressValue, getAddressUtxoHex } from '../zkos/transactions';
 
 function customSerializer(key: string, value: unknown) {
   if (typeof value === 'bigint') {

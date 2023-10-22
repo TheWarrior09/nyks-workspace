@@ -44,7 +44,7 @@ import {
   TradingAccountData,
   useQueryGetTradingAccounts,
 } from '../hooks/useQueryZkos';
-import { delay } from '../zkos/darkTransaction';
+import { delay } from '../zkos/transactions/';
 import { useSnackbarUpdateContext } from '../../../context/snackbarContext';
 // import { createTraderOrder, getZkosAccount } from '../zkos';
 // import {

@@ -3,7 +3,7 @@ import {
   burnTransactionSingle,
   darkTransactionSingle,
   quisquisTransactionSingle,
-} from '../zkos/darkTransaction';
+} from '../zkos/transactions';
 
 export const useBroadcastDarkTransactionSingle = () => {
   return useMutation({

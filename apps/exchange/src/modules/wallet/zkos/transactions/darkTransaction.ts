@@ -4,7 +4,7 @@ import {
   getUtxoForAddress,
   getUtxoFromDB,
   getUtxoOutput,
-} from './zkosApi';
+} from '../zkosApi';
 import {
   getUtxoHex,
   verifyDarkTx,
@@ -15,11 +15,11 @@ import {
   createDarkTransaction,
   createBurnTransaction,
   getInputFromOutput,
-} from './accountManagement';
+} from '../accountManagement';
 import {
   AddNewAccountInLocalData,
   updateAccountStatusInLocalData,
-} from './tradingAccount';
+} from '../tradingAccount';
 
 export const convertToJsonString = (jsObject: unknown) => {
   return JSON.stringify(jsObject);
