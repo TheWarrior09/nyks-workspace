@@ -47,7 +47,7 @@ const signAndBroadcastMintBurnTradingBTCTx = async (
     ''
   );
   const fee = calculateFee(Math.round(gasEstimation * 1.3), gasPrice);
-  return signingClient.signAndBroadcast(
+  return await signingClient.signAndBroadcast(
     msg.twilightAddress,
     [msgMintBurnTradingBtc],
     fee
