@@ -12,7 +12,7 @@ import { signArbitraryMessage, useKeplrWallet } from '@nyks-workspace/hooks';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import CurrencyBitcoinIcon from '@mui/icons-material/CurrencyBitcoin';
 import LoginIcon from '@mui/icons-material/Login';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import {
   CHAIN_ID,
@@ -44,6 +44,11 @@ const Wallet = () => {
   });
 
   const twilightAddress = getAccountsQuery.data?.[0].address;
+
+  useEffect(() => {
+    setHexAddress(undefined);
+    setSignature(undefined);
+  }, [setHexAddress, setSignature, twilightAddress]);
 
   const [selectedTransferDialog, setSelectedTransferDialog] = useState(false);
   const [selectedWithdrawDialog, setSelectedWithdrawDialog] = useState(false);
@@ -211,13 +216,25 @@ const Wallet = () => {
               </Grid>
 
               <Grid item xs={2}>
-                <Typography variant="h6" color="text.secondary" mt={2} mb={2}>
+                <Typography
+                  variant="h6"
+                  color="text.secondary"
+                  mt={2}
+                  mb={2}
+                  textAlign={'center'}
+                >
                   {getBtcBalanceOnNYKS()} SATS
                 </Typography>
               </Grid>
 
               <Grid item xs={2}>
-                <Typography variant="h6" color="text.secondary" mt={2} mb={2}>
+                <Typography
+                  variant="h6"
+                  color="text.secondary"
+                  mt={2}
+                  mb={2}
+                  textAlign={'center'}
+                >
                   {getNyksBalanceOnNYKS()} nyks
                 </Typography>
               </Grid>
@@ -266,13 +283,19 @@ const Wallet = () => {
                 </Box>
               </Grid>
 
-              <Grid item xs={4}>
-                <>
-                  <Typography variant="h6" color="text.secondary" mt={2} mb={2}>
-                    {tradingAccountBalance ?? '0'} SATS
-                  </Typography>
-                </>
+              <Grid item xs={2}>
+                <Typography
+                  variant="h6"
+                  color="text.secondary"
+                  mt={2}
+                  mb={2}
+                  textAlign={'center'}
+                >
+                  {hexAddress ? `${tradingAccountBalance ?? '0'} SATS` : '-'}
+                </Typography>
               </Grid>
+
+              <Grid item xs={2}></Grid>
 
               <Grid item xs={4}>
                 <>

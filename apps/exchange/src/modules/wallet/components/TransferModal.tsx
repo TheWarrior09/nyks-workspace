@@ -526,8 +526,8 @@ function TransferModal({
                   label="From"
                   onChange={handleChangeTypeTransferFrom}
                 >
-                  <MenuItem value={'trading'}>Trading</MenuItem>
                   <MenuItem value={'funding'}>Funding</MenuItem>
+                  <MenuItem value={'trading'}>Trading</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
@@ -541,8 +541,8 @@ function TransferModal({
                   label="To"
                   onChange={handleChangeTypeTransferTo}
                 >
-                  <MenuItem value={'trading'}>Trading</MenuItem>
                   <MenuItem value={'funding'}>Funding</MenuItem>
+                  <MenuItem value={'trading'}>Trading</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
