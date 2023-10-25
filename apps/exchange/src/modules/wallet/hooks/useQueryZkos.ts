@@ -24,8 +24,10 @@ const handleGetUpdatedTradingAccounts = async (
   twilightAddress: string
 ) => {
   const utxos = await queryUtxoFromDB();
-
-  const addresses = await addressMonitoring(signature, utxos.result.result);
+  const addresses = await addressMonitoring(
+    signature,
+    utxos.result.result ?? JSON.stringify('')
+  );
   const tradingAccountData: Promise<TradingAccountData>[] = JSON.parse(
     addresses
   ).map(async (item: string) => {
@@ -43,7 +45,6 @@ const handleGetUpdatedTradingAccounts = async (
   const accounts = await Promise.all(tradingAccountData);
 
   const localData = getLocalData(twilightAddress);
-
   localData[twilightAddress].accounts = accounts;
 
   localStorage.setItem(
