@@ -25,7 +25,7 @@ import {
   AddNewAccountInLocalData,
   getTradingAccountDetails,
 } from '../zkos/tradingAccount';
-import { useGlobalContext } from '../../../context';
+import { useGlobalStateContext } from '../../../context';
 import {
   generateNewFundingAccount,
   generatePublicKey,
@@ -86,7 +86,7 @@ function TransferModal({
   const broadcastBurnTransaction = useBroadcastBurnTransaction();
 
   const { mintBurnTradingBtc } = useTwilightRpcWithCosmjs();
-  const { signature } = useGlobalContext();
+  const { signature } = useGlobalStateContext();
   if (!signature) throw new Error('signature not found');
 
   const handleChangeToAddressType = (

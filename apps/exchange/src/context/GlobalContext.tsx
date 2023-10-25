@@ -7,24 +7,27 @@ import {
   useState,
 } from 'react';
 
-type GlobalContext = {
+type GlobalStateContext = {
   hexAddress: string | undefined;
-  setHexAddress: Dispatch<SetStateAction<string | undefined>>;
-
-  qqAccount: string | undefined;
-  setTradingAccount: Dispatch<SetStateAction<string | undefined>>;
-
+  tradingAccount: string | undefined;
   encryptScalar: string | undefined;
-  setEncryptScalar: Dispatch<SetStateAction<string | undefined>>;
-
   amount: number | undefined;
-  setAmount: Dispatch<SetStateAction<number | undefined>>;
-
   signature: string | undefined;
+};
+
+type GlobalStateUpdateContext = {
+  setHexAddress: Dispatch<SetStateAction<string | undefined>>;
+  setTradingAccount: Dispatch<SetStateAction<string | undefined>>;
+  setEncryptScalar: Dispatch<SetStateAction<string | undefined>>;
+  setAmount: Dispatch<SetStateAction<number | undefined>>;
   setSignature: Dispatch<SetStateAction<string | undefined>>;
 };
 
-const GlobalContext = createContext<GlobalContext | null>(null);
+const GlobalStateContext = createContext<GlobalStateContext | null>(null);
+
+const GlobalStateUpdateContext = createContext<GlobalStateUpdateContext | null>(
+  null
+);
 
 const GlobalContextProvider = ({ children }: { children: React.ReactNode }) => {
   const [hexAddress, setHexAddress] = useState<string>();
@@ -34,33 +37,52 @@ const GlobalContextProvider = ({ children }: { children: React.ReactNode }) => {
   const [signature, setSignature] = useState<string>();
 
   return (
-    <GlobalContext.Provider
+    <GlobalStateContext.Provider
       value={{
         hexAddress,
-        setHexAddress,
-        qqAccount: tradingAccount,
-        setTradingAccount,
+        tradingAccount,
         encryptScalar,
-        setEncryptScalar,
         amount,
-        setAmount,
         signature,
-        setSignature,
       }}
     >
-      {children}
-    </GlobalContext.Provider>
+      <GlobalStateUpdateContext.Provider
+        value={{
+          setHexAddress,
+          setTradingAccount,
+          setEncryptScalar,
+          setAmount,
+          setSignature,
+        }}
+      >
+        {children}
+      </GlobalStateUpdateContext.Provider>
+    </GlobalStateContext.Provider>
   );
 };
 
-export { GlobalContextProvider };
-
-export const useGlobalContext = () => {
-  const context = useContext(GlobalContext);
+const useGlobalStateContext = () => {
+  const context = useContext(GlobalStateContext);
   if (!context) {
     throw new Error(
-      'Global context should be used within GlobalContextProvider.'
+      'Global state context should be used within GlobalStateContextProvider.'
     );
   }
   return context;
+};
+
+const useGlobalStateUpdateContext = () => {
+  const context = useContext(GlobalStateUpdateContext);
+  if (!context) {
+    throw new Error(
+      'Global state update context should be used within GlobalStateUpdateContextProvider.'
+    );
+  }
+  return context;
+};
+
+export {
+  GlobalContextProvider,
+  useGlobalStateContext,
+  useGlobalStateUpdateContext,
 };

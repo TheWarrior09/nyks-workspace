@@ -9,7 +9,7 @@ import {
   TableRow,
 } from '@mui/material';
 import { useQueryGetTradingAccounts } from '../../hooks/useQueryZkos';
-import { useGlobalContext } from '../../../../context';
+import { useGlobalStateContext } from '../../../../context';
 import { NYKS_EXPLORER } from '../../../../../constants';
 
 interface CustomTableCellProps {
@@ -35,7 +35,7 @@ function TransactionList({
 }: {
   twilightAddress: string;
 }): JSX.Element {
-  const { signature } = useGlobalContext();
+  const { signature } = useGlobalStateContext();
 
   if (!signature) throw new Error('signature not found');
 

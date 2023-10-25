@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Section from './section';
 import TabBar from './tab-bar';
 import colors from '../../../../colors';
@@ -19,7 +19,7 @@ import {
   useMutation,
   useQuery,
 } from '@tanstack/react-query';
-import { useGlobalContext } from '../../../context';
+import { useGlobalStateContext } from '../../../context';
 
 async function submitQueryTraderOrder({
   accountId,
@@ -160,17 +160,17 @@ function Position() {
   //   margin: 3,
   // });
 
-  const { encryptScalar, qqAccount, signature, hexAddress } =
-    useGlobalContext();
+  const { encryptScalar, tradingAccount, signature, hexAddress } =
+    useGlobalStateContext();
 
   if (!signature) throw new Error('signature not found');
   if (!hexAddress) throw new Error('hexAddress not found');
-  if (!qqAccount) throw new Error('qqAccount not found');
+  if (!tradingAccount) throw new Error('qqAccount not found');
   if (!encryptScalar) throw new Error('encryptScalar not found');
 
   const queryOrder = useQueryTraderOrder({
     encryptScalar,
-    qqAccount,
+    qqAccount: tradingAccount,
     signature,
     hexAddress,
   });
@@ -178,15 +178,15 @@ function Position() {
   const cancelTraderOrder = useCancelTraderOrder();
 
   const handleCancelTraderOrder = async (uuid: string) => {
-    const tradingAccount = JSON.stringify({
-      zkos_account_hex: qqAccount,
+    const tradingAccount1 = JSON.stringify({
+      zkos_account_hex: tradingAccount,
       encrypt_scalar_hex: encryptScalar,
     });
 
     await cancelTraderOrder.mutateAsync({
       accountId: hexAddress,
       signature,
-      tradingAccount,
+      tradingAccount: tradingAccount1,
       uuid,
     });
   };
@@ -544,8 +544,8 @@ export default function AccountTable() {
     cosmosRest: COSMOS_REST,
   });
 
-  const { encryptScalar, qqAccount, signature, hexAddress } =
-    useGlobalContext();
+  const { encryptScalar, tradingAccount, signature, hexAddress } =
+    useGlobalStateContext();
 
   const accountTableTab = page === 'positions' ? <Position /> : <OpenOrders />;
 
@@ -565,7 +565,7 @@ export default function AccountTable() {
 
           {typeof signature === 'undefined' ||
           typeof hexAddress === 'undefined' ||
-          typeof qqAccount === 'undefined' ||
+          typeof tradingAccount === 'undefined' ||
           typeof encryptScalar === 'undefined'
             ? 'Please connect trading account'
             : accountTableTab}

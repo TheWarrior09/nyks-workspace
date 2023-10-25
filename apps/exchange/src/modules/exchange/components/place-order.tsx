@@ -9,7 +9,7 @@ import {
   createTraderOrder,
   submitJsonRequest,
 } from '../../wallet/zkos/tradeOrder';
-import { useGlobalContext } from '../../../context';
+import { useGlobalStateContext } from '../../../context';
 import {} from '../../wallet/zkos/';
 import {
   getFundingAccountString,
@@ -65,8 +65,8 @@ const useSubmitTraderOrder = () =>
   });
 
 export default function PlaceOrder() {
-  const { amount, encryptScalar, qqAccount, signature, hexAddress } =
-    useGlobalContext();
+  const { amount, encryptScalar, tradingAccount, signature, hexAddress } =
+    useGlobalStateContext();
 
   const [orderType, setOrderType] = useState<OrderType>('LIMIT');
 
@@ -101,7 +101,7 @@ export default function PlaceOrder() {
     if (!signature) throw new Error('signature not found');
     if (!hexAddress) throw new Error('hexAddress not found');
     if (!amount) throw new Error('amount not found');
-    if (!qqAccount) throw new Error('qqAccount not found');
+    if (!tradingAccount) throw new Error('qqAccount not found');
     if (!encryptScalar) throw new Error('encryptScalar not found');
 
     // console.log(
@@ -118,9 +118,9 @@ export default function PlaceOrder() {
     //   encrypt_scalar_hex: encryptScalar,
     // });
 
-    const tradingAccount = getFundingAccountString({
+    const tradingAccount1 = getFundingAccountString({
       encryptScalarHex: encryptScalar,
-      tradingAccountHex: qqAccount,
+      tradingAccountHex: tradingAccount,
     });
 
     // const order = await createTraderOrder({
@@ -144,7 +144,7 @@ export default function PlaceOrder() {
         positionType,
         price: Number(limitPrice),
         signature,
-        tradingAccount,
+        tradingAccount: tradingAccount1,
       },
       {
         onSuccess: () => {

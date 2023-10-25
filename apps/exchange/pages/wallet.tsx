@@ -21,7 +21,10 @@ import {
   SIGN_IN_MESSAGE,
   TENDERMINT_RPC,
 } from '../constants';
-import { useGlobalContext } from '../src/context';
+import {
+  useGlobalStateContext,
+  useGlobalStateUpdateContext,
+} from '../src/context';
 import { generatePublicKey } from '../src/modules/wallet/zkos';
 import { TradingAccount, TransferModal } from '../src/modules/wallet';
 import { generatePublicKeyHexAddress } from '../src/modules/wallet/zkos/accountManagement';
@@ -29,8 +32,9 @@ import { WithdrawModal } from '../src/modules/wallet/components/WithdrawModal';
 import { useQueryGetTradingAccounts } from '../src/modules/wallet/hooks/useQueryZkos';
 
 const Wallet = () => {
-  const { hexAddress, setHexAddress, setSignature, signature } =
-    useGlobalContext();
+  const { hexAddress, signature } = useGlobalStateContext();
+
+  const { setHexAddress, setSignature } = useGlobalStateUpdateContext();
 
   const {
     getAccountsQuery,

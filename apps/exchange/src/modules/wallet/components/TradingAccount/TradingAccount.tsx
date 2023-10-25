@@ -7,11 +7,11 @@ import {
   TENDERMINT_RPC,
   COSMOS_REST,
 } from '../../../../../constants';
-import { useGlobalContext } from '../../../../..//src/context';
+import { useGlobalStateContext } from '../../../../..//src/context';
 import { useQueryGetTradingAccounts } from '../../hooks/useQueryZkos';
 
 const TradingAccountSection = () => {
-  const { hexAddress, signature } = useGlobalContext();
+  const { hexAddress, signature } = useGlobalStateContext();
 
   const { getAccountsQuery } = useKeplrWallet({
     chainId: CHAIN_ID,

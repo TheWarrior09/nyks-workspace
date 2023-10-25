@@ -12,7 +12,7 @@ import {
   Typography,
 } from '@mui/material';
 import { useState } from 'react';
-import { useGlobalContext } from '../../../../context';
+import { useGlobalStateContext } from '../../../../context';
 import {
   TradingAccountData,
   useQueryGetTradingAccounts,
@@ -54,8 +54,7 @@ function TradingAccountList({
     address: string;
   }>({ address: '', amount: undefined });
 
-  const { setEncryptScalar, setTradingAccount, setAmount, signature } =
-    useGlobalContext();
+  const { signature } = useGlobalStateContext();
 
   if (!signature) throw new Error('signature not found');
 

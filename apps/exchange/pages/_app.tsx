@@ -9,7 +9,7 @@ import theme from '../theme';
 import {
   EnvironmentContextProvider,
   GlobalContextProvider,
-  useGlobalContext,
+  useGlobalStateContext,
 } from '../src/context';
 import { CHAIN_ID, COSMOS_REST, TENDERMINT_RPC } from '../constants';
 import {
@@ -79,7 +79,7 @@ function CustomApp({ Component, pageProps }: AppProps) {
 export default CustomApp;
 
 const Navbar = () => {
-  const { hexAddress } = useGlobalContext();
+  const { hexAddress } = useGlobalStateContext();
 
   return (
     <StyledNavbar
