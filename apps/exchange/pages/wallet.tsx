@@ -168,6 +168,7 @@ const Wallet = () => {
               <Button
                 variant="contained"
                 sx={{ mr: 2 }}
+                disabled={true}
                 onClick={() => {
                   // setSelectedWithdrawDialog(true);
                 }}
@@ -178,8 +179,9 @@ const Wallet = () => {
               <Button
                 variant="contained"
                 sx={{ mr: 2 }}
+                disabled={!hexAddress}
                 onClick={() => {
-                  // setSelectedTransferDialog(true);
+                  setSelectedTransferDialog(true);
                 }}
               >
                 Transfer
