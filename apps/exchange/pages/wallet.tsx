@@ -13,7 +13,6 @@ import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import CurrencyBitcoinIcon from '@mui/icons-material/CurrencyBitcoin';
 import LoginIcon from '@mui/icons-material/Login';
 import { useEffect, useState } from 'react';
-
 import {
   CHAIN_ID,
   COSMOS_REST,
