@@ -119,15 +119,6 @@ export async function darkTransactionMultiple({
       height: 0,
     }))
   );
-
-  const receiverAddressOutput = await getAddressOutput(toAddress);
-  console.log('receiverAddressOutput', receiverAddressOutput);
-
-  const toAddressValue = await getAddressValue(signature, toAddress);
-  console.log('toAddress value', toAddressValue);
-
-  const fromAddressValue = await getAddressValue(signature, fromAddress);
-  console.log('fromAddress value', fromAddressValue);
 }
 
 export async function darkTransaction({
@@ -194,49 +185,29 @@ export async function darkTransaction({
   return txHash;
 }
 
-const getAddressUtxo = async (address: string) => {
-  const utxos = await getUtxoForAddress(address);
-  console.log('utxos', utxos);
-
-  return JSON.stringify(utxos.result[0]);
-};
-
-export const getAddressUtxoHex = async (address: string) => {
-  const utxos = await getUtxoForAddress(address);
-  console.log('utxos', utxos);
-
-  const utxoHex = await getUtxoHex(JSON.stringify(utxos.result[0]));
-  console.log('utxoHex', utxoHex);
-
-  return utxoHex;
-};
-
-const getOutputFromUtxo = async (utxo: string) => {
+const getAddressUtxoDetails = async (address: string) => {
+  const utxoResponse = await queryUtxoForAddress(address);
+  const utxo = JSON.stringify(utxoResponse.result[0]);
   const utxoHex = await getUtxoHex(utxo);
-  console.log('utxoHex', utxoHex);
 
-  const output = await getUtxoOutput(utxoHex);
-  console.log('output', output);
-
-  return JSON.stringify(output.result);
+  return { utxoJson: utxo, utxoHex };
 };
 
-export const getAddressOutput = async (address: string) => {
-  console.log('toAccount ', address);
+const getAddressOutputDetails = async (address: string) => {
+  const utxoDetails = await getAddressUtxoDetails(address);
+  const outputResponse = await queryUtxoOutput(utxoDetails.utxoHex);
+  const output = JSON.stringify(outputResponse.result);
 
-  const utxoString = await getAddressUtxo(address);
-  console.log('utxoString', utxoString);
-
-  const outputString = await getOutputFromUtxo(utxoString);
-
-  return outputString;
+  return { output, ...utxoDetails };
 };
 
-export const getAddressValue = async (signature: string, address: string) => {
-  const output = await getAddressOutput(address);
-  const value = await getAccountValueFromOutput(signature, output);
+export const getAddressDetails = async (signature: string, address: string) => {
+  const addressOutputDetails = await getAddressOutputDetails(address);
 
-  console.log('address value', value);
+  const value = await getAccountValueFromOutput(
+    signature,
+    addressOutputDetails.output
+  );
 
-  return value;
+  return { value, ...addressOutputDetails };
 };

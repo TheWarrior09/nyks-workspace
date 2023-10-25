@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { queryUtxoFromDB } from '../zkos/zkosApi';
 import { addressMonitoring, getTxIDFromUTXO } from '../zkos';
-import { getAddressValue, getAddressUtxoHex } from '../zkos/transactions';
+import { getAddressDetails } from '../zkos/transactions';
 
 function customSerializer(key: string, value: unknown) {
   if (typeof value === 'bigint') {
@@ -29,14 +29,13 @@ const handleGetUpdatedTradingAccounts = async (
   const tradingAccountData: Promise<TradingAccountData>[] = JSON.parse(
     addresses
   ).map(async (item: string) => {
-    const value = await getAddressValue(signature, item);
-    const utxo = await getAddressUtxoHex(item);
-    const txId = await getTxIDFromUTXO(utxo);
+    const addressDetails = await getAddressDetails(signature, item);
+    const txId = await getTxIDFromUTXO(addressDetails.utxoHex);
 
     return {
       tradingAddress: item,
-      value,
-      utxo,
+      value: addressDetails.value,
+      utxo: addressDetails.utxoHex,
       txId,
     };
   });
