@@ -1,8 +1,8 @@
 import {
   commitDarkTransaction,
-  getUtxoForAddress,
-  getUtxoFromDB,
-  getUtxoOutput,
+  queryUtxoForAddress,
+  queryUtxoFromDB,
+  queryUtxoOutput,
 } from '../zkosApi';
 import {
   getUtxoHex,
@@ -27,13 +27,13 @@ export async function quisquisTransaction({
 }) {
   const zkos = await import('zkos-wasm');
 
-  const utxos = await getUtxoForAddress(fromAddress);
+  const utxos = await queryUtxoForAddress(fromAddress);
 
   const utxoString = JSON.stringify(utxos.result[0]);
 
   const utxoHex = await getUtxoHex(utxoString);
 
-  const output = await getUtxoOutput(utxoHex);
+  const output = await queryUtxoOutput(utxoHex);
 
   const outputString = JSON.stringify(output.result);
 
@@ -42,7 +42,7 @@ export async function quisquisTransaction({
   let receiver: string;
 
   if (toAddressType === 'output') {
-    const receiverOutput = await getUtxoOutput(toAddress);
+    const receiverOutput = await queryUtxoOutput(toAddress);
 
     const receiverOutputString = JSON.stringify(receiverOutput.result);
 
@@ -57,7 +57,7 @@ export async function quisquisTransaction({
     receiver = toAddress;
   }
 
-  const allUtxos = await getUtxoFromDB();
+  const allUtxos = await queryUtxoFromDB();
 
   const quisquisTxSingle = await createQuisquisTransaction({
     signature,

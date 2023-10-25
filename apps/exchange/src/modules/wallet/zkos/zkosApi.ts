@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { ZKOS_API_ENDPOINT } from '../../../../constants';
 
-const getUtxoFromDB = async () => {
+const queryUtxoFromDB = async () => {
   const message = JSON.stringify({
     jsonrpc: '2.0',
     method: 'getUtxosFromDB',
@@ -22,7 +22,7 @@ const getUtxoFromDB = async () => {
   });
   return data;
 };
-const getUtxoForAddress = async (zkosAddress: string) => {
+const queryUtxoForAddress = async (zkosAddress: string) => {
   const message = JSON.stringify({
     jsonrpc: '2.0',
     method: 'getUtxos',
@@ -37,7 +37,7 @@ const getUtxoForAddress = async (zkosAddress: string) => {
   });
   return data;
 };
-const getAllUtxoForAddress = async (zkosAddress: string) => {
+const queryAllUtxoForAddress = async (zkosAddress: string) => {
   const message = JSON.stringify({
     jsonrpc: '2.0',
     method: 'allUtxos',
@@ -52,7 +52,7 @@ const getAllUtxoForAddress = async (zkosAddress: string) => {
   });
   return data;
 };
-const getUtxoOutput = async (utxo: string) => {
+const queryUtxoOutput = async (utxo: string) => {
   const message = JSON.stringify({
     jsonrpc: '2.0',
     method: 'getOutput',
@@ -103,10 +103,10 @@ const commitBurnTransaction = async (
 };
 
 export {
-  getUtxoFromDB,
-  getUtxoForAddress,
-  getAllUtxoForAddress,
-  getUtxoOutput,
+  queryUtxoFromDB,
+  queryUtxoForAddress,
+  queryAllUtxoForAddress,
+  queryUtxoOutput,
   commitDarkTransaction,
   commitBurnTransaction,
 };

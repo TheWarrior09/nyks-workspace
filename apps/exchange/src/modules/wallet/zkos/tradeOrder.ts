@@ -8,7 +8,7 @@ import {
   getTradingAccountFromFundingAccount,
   getTradingHexAddressFromAccount,
 } from './accountManagement';
-import { getUtxoForAddress } from './zkosApi';
+import { queryUtxoForAddress } from './zkosApi';
 
 type OrderType = 'MARKET' | 'LIMIT';
 type OrderStatue =
@@ -51,7 +51,7 @@ async function createTraderOrder({
 
   const outputFromZkos = zkos.createOutputFromTradingAccount(zkosAccount);
 
-  const userUtxo = await getUtxoForAddress(JSON.parse(zkosHexAddress));
+  const userUtxo = await queryUtxoForAddress(JSON.parse(zkosHexAddress));
   if (userUtxo.error) {
     throw new Error('cannot get user utxo');
   }
@@ -278,7 +278,7 @@ async function createExecuteTraderOrder({
 
   // const outputFromZkos = zkos.createOutputFromZkosAccount(zkosAccount);
 
-  const userUtxo = await getUtxoForAddress(JSON.parse(zkosHexAddress));
+  const userUtxo = await queryUtxoForAddress(JSON.parse(zkosHexAddress));
   if (userUtxo.error) {
     throw new Error('cannot get user utxo');
   }
@@ -347,5 +347,4 @@ export {
   createExecuteTraderOrder,
   submitExecuteTraderOrder,
   submitJsonRequest,
-  getUtxoForAddress,
 };

@@ -1,8 +1,8 @@
 import {
   commitBurnTransaction,
   commitDarkTransaction,
-  getUtxoForAddress,
-  getUtxoOutput,
+  queryUtxoForAddress,
+  queryUtxoOutput,
 } from '../zkosApi';
 import {
   getUtxoHex,
@@ -28,13 +28,13 @@ export async function burnTransaction({
 }) {
   const zkos = await import('zkos-wasm');
 
-  const utxos = await getUtxoForAddress(fromAddress);
+  const utxos = await queryUtxoForAddress(fromAddress);
 
   const utxoString = JSON.stringify(utxos.result[0]);
 
   const utxoHex = await getUtxoHex(utxoString);
 
-  const output = await getUtxoOutput(utxoHex);
+  const output = await queryUtxoOutput(utxoHex);
 
   const outputString = JSON.stringify(output.result);
 
@@ -68,13 +68,13 @@ export async function burnTransaction({
   );
 
   const updatedReceiverAddress = JSON.parse(updatedAddresses)[1];
-  const utxos1 = await getUtxoForAddress(updatedReceiverAddress);
+  const utxos1 = await queryUtxoForAddress(updatedReceiverAddress);
 
   const utxoString1 = JSON.stringify(utxos1.result[0]);
 
   const utxoHex1 = await getUtxoHex(utxoString1);
 
-  const output1 = await getUtxoOutput(utxoHex1);
+  const output1 = await queryUtxoOutput(utxoHex1);
 
   const outputString1 = JSON.stringify(output1.result);
 

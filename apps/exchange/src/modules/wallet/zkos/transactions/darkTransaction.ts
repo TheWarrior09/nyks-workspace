@@ -1,7 +1,7 @@
 import {
   commitDarkTransaction,
-  getUtxoForAddress,
-  getUtxoOutput,
+  queryUtxoForAddress,
+  queryUtxoOutput,
 } from '../zkosApi';
 import {
   getUtxoHex,
@@ -39,7 +39,7 @@ export async function darkTransactionMultiple({
 }) {
   const zkos = await import('zkos-wasm');
 
-  const utxos = await getUtxoForAddress(fromAddress);
+  const utxos = await queryUtxoForAddress(fromAddress);
   console.log('utxos', utxos);
 
   const utxoString = JSON.stringify(utxos.result[0]);
@@ -47,7 +47,7 @@ export async function darkTransactionMultiple({
   const utxoHex = await getUtxoHex(utxoString);
   console.log('utxoHex', utxoHex);
 
-  const output = await getUtxoOutput(utxoHex);
+  const output = await queryUtxoOutput(utxoHex);
   console.log('output', output);
 
   const outputString = JSON.stringify(output.result);
@@ -147,11 +147,11 @@ export async function darkTransaction({
 }) {
   const zkos = await import('zkos-wasm');
 
-  const utxos = await getUtxoForAddress(fromAddress);
+  const utxos = await queryUtxoForAddress(fromAddress);
   const utxoString = JSON.stringify(utxos.result[0]);
   const utxoHex = await getUtxoHex(utxoString);
 
-  const output = await getUtxoOutput(utxoHex);
+  const output = await queryUtxoOutput(utxoHex);
   const outputString = JSON.stringify(output.result);
 
   const coinTypeInput = await getInputFromOutput(outputString, utxoString, 0);
@@ -159,7 +159,7 @@ export async function darkTransaction({
   let receiver: string;
 
   if (toAddressType === 'output') {
-    const receiverOutput = await getUtxoOutput(toAddress);
+    const receiverOutput = await queryUtxoOutput(toAddress);
 
     const receiverOutputString = JSON.stringify(receiverOutput.result);
 

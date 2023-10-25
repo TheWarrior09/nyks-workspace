@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { getUtxoFromDB } from '../zkos/zkosApi';
+import { queryUtxoFromDB } from '../zkos/zkosApi';
 import { addressMonitoring, getTxIDFromUTXO } from '../zkos';
 import { getAddressValue, getAddressUtxoHex } from '../zkos/transactions';
 
@@ -23,7 +23,7 @@ const handleGetUpdatedTradingAccounts = async (
   signature: string,
   twilightAddress: string
 ) => {
-  const utxos = await getUtxoFromDB();
+  const utxos = await queryUtxoFromDB();
 
   const addresses = await addressMonitoring(signature, utxos.result.result);
   const tradingAccountData: Promise<TradingAccountData>[] = JSON.parse(
@@ -99,7 +99,7 @@ const useQueryGetTradingAccounts = (
 const useQueryGetUtxosFromDB = () => {
   return useQuery({
     queryKey: ['getUtxosFromDB'],
-    queryFn: getUtxoFromDB,
+    queryFn: queryUtxoFromDB,
     refetchOnWindowFocus: false,
     refetchInterval: 60 * 1000,
   });
