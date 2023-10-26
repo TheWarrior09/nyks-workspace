@@ -514,7 +514,7 @@ function TransferModal({
         </IconButton>
       </DialogTitle>
       <DialogContent>
-        <DialogContentText>
+        <DialogContentText component="div">
           <Grid container spacing={3}>
             <Grid item xs={6}>
               <FormControl fullWidth sx={{ my: 1, minWidth: 120 }}>

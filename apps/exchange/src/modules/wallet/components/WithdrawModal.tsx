@@ -55,7 +55,7 @@ export function WithdrawModal({
           </IconButton>
         </DialogTitle>
         <DialogContent>
-          <DialogContentText>
+          <DialogContentText component="div">
             On-chain Withdrawal
             <Grid container>
               <Grid item xs={12}>

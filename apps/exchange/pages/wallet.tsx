@@ -87,11 +87,15 @@ const Wallet = () => {
   );
 
   const tradingAccountBalance =
-    tradingAccountsQuery.status === 'success' &&
-    tradingAccountsQuery.data.reduce((accumulator: number, currentValue) => {
-      const btcValue = Number(currentValue.value);
-      return accumulator + btcValue;
-    }, 0);
+    tradingAccountsQuery.status === 'success'
+      ? tradingAccountsQuery.data.reduce(
+          (accumulator: number, currentValue) => {
+            const btcValue = Number(currentValue.value);
+            return accumulator + btcValue;
+          },
+          0
+        )
+      : undefined;
 
   return (
     <>
@@ -245,15 +249,17 @@ const Wallet = () => {
               <Grid item xs={4}>
                 <>
                   <Tooltip title="Withdraw Bitcoin" arrow placement="top">
-                    <ToggleButton
-                      value="check"
-                      selected={selectedWithdrawDialog}
-                      onChange={() => {
-                        setSelectedWithdrawDialog(!selectedWithdrawDialog);
-                      }}
-                    >
-                      <CurrencyBitcoinIcon />
-                    </ToggleButton>
+                    <span>
+                      <ToggleButton
+                        value="check"
+                        selected={selectedWithdrawDialog}
+                        onChange={() => {
+                          setSelectedWithdrawDialog(!selectedWithdrawDialog);
+                        }}
+                      >
+                        <CurrencyBitcoinIcon />
+                      </ToggleButton>
+                    </span>
                   </Tooltip>
 
                   <Tooltip
@@ -261,16 +267,18 @@ const Wallet = () => {
                     arrow
                     placement="top"
                   >
-                    <ToggleButton
-                      value="check"
-                      selected={selectedTransferDialog}
-                      disabled={!hexAddress}
-                      onChange={() => {
-                        setSelectedTransferDialog(!selectedTransferDialog);
-                      }}
-                    >
-                      <SwapHorizIcon />
-                    </ToggleButton>
+                    <span>
+                      <ToggleButton
+                        value="check"
+                        selected={selectedTransferDialog}
+                        disabled={!hexAddress}
+                        onChange={() => {
+                          setSelectedTransferDialog(!selectedTransferDialog);
+                        }}
+                      >
+                        <SwapHorizIcon />
+                      </ToggleButton>
+                    </span>
                   </Tooltip>
                 </>
               </Grid>
@@ -303,13 +311,15 @@ const Wallet = () => {
               <Grid item xs={4}>
                 <>
                   <Tooltip title="Activate Trading Account" arrow>
-                    <ToggleButton
-                      value="check"
-                      disabled={!!hexAddress}
-                      onChange={handleSignMessageThroughKeplr}
-                    >
-                      <LoginIcon />
-                    </ToggleButton>
+                    <span>
+                      <ToggleButton
+                        value="check"
+                        disabled={!!hexAddress}
+                        onChange={handleSignMessageThroughKeplr}
+                      >
+                        <LoginIcon />
+                      </ToggleButton>
+                    </span>
                   </Tooltip>
 
                   {selectedTransferDialog && hexAddress ? (
