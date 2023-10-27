@@ -67,6 +67,26 @@ function TransactionList({
           {tradingAccountsQuery.status === 'success' &&
             tradingAccountsQuery.data
               .filter((row) => Number(row.value) !== 0)
+              .reduce(
+                (
+                  accumulator: {
+                    tradingAddress: string;
+                    value: bigint;
+                    utxo: string;
+                    txId: string;
+                  }[],
+                  currentObject
+                ) => {
+                  const isDuplicate = accumulator.some(
+                    (obj) => obj.txId === currentObject.txId
+                  );
+                  if (!isDuplicate) {
+                    accumulator.push(currentObject);
+                  }
+                  return accumulator;
+                },
+                []
+              )
               .map((row, index) => (
                 <TableRow
                   key={row.txId}
