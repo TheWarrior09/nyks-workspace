@@ -17,6 +17,7 @@ import {
   useSnackbarContext,
   useSnackbarUpdateContext,
 } from '../src/context/snackbarContext';
+import { MetaMaskProvider } from '../src/modules/metamask-wallet/hooks';
 
 const queryClient = new QueryClient();
 
@@ -60,14 +61,16 @@ function CustomApp({ Component, pageProps }: AppProps) {
           <GlobalContextProvider>
             <CssBaseline />
             <main className="app">
-              <EnvironmentContextProvider>
-                <SnackbarContextProvider>
-                  <Navbar />
-                  <Component {...pageProps} />
+              <MetaMaskProvider>
+                <EnvironmentContextProvider>
+                  <SnackbarContextProvider>
+                    <Navbar />
+                    <Component {...pageProps} />
 
-                  <SnackbarComponent />
-                </SnackbarContextProvider>
-              </EnvironmentContextProvider>
+                    <SnackbarComponent />
+                  </SnackbarContextProvider>
+                </EnvironmentContextProvider>
+              </MetaMaskProvider>
             </main>
           </GlobalContextProvider>
         </ThemeProvider>
