@@ -16,6 +16,9 @@ export const RELAYER_QUERY_ENDPOINT = 'https://twilight.rest/relayer/';
 
 export const WEBSOCKET_URL = 'wss://twilight.rest/ws';
 export const RELAYER_API = 'https://twilight.rest/api/';
+
+export const nyks_snap = 'npm:nkys-wallet';
+
 export const MESSAGE_SUBSCRIBE_LIVE_PRICE =
   '{"jsonrpc": "2.0", "method": "subscribe_live_price_data", "id":"price_feeder", "params": null }';
 
