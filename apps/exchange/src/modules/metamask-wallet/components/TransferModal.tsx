@@ -38,14 +38,6 @@ import {
 } from '../utils';
 import type { TradingAccountData } from '../utils';
 
-function getTradingAccountDetails(tradingAccount: string) {
-  const parseTradingAccount = JSON.parse(tradingAccount);
-  return {
-    tradingAccountHex: parseTradingAccount.trading_account_hex,
-    encryptScalarHex: parseTradingAccount.encrypt_scalar_hex,
-  };
-}
-
 interface FundingToTradingModal {
   open: boolean;
   onClose: () => void;
@@ -235,14 +227,11 @@ function TransferModal({
 
     const chainTradingAccount = await generateNewFundingAccount(amount);
 
-    const { encryptScalarHex, tradingAccountHex } =
-      getTradingAccountDetails(chainTradingAccount);
-
     const mintSatsTxResponse = await mintBurnTradingBtc.mutateAsync(
       {
         btcValue: Long.fromNumber(amount),
-        qqAccount: tradingAccountHex,
-        encryptScalar: encryptScalarHex,
+        qqAccount: chainTradingAccount.zkAccount,
+        encryptScalar: chainTradingAccount.rScalar,
         mintOrBurn: true,
         twilightAddress: twilightAddress ?? '',
       },

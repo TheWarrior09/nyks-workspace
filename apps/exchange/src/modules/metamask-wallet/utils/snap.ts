@@ -113,7 +113,7 @@ export const generateNewFundingAccount = async (amount: number) => {
         params: { amount },
       },
     },
-  }) as Promise<string>;
+  }) as Promise<{ zkAccount: string; rScalar: string }>;
 };
 
 export const sendDarkTx = async ({
