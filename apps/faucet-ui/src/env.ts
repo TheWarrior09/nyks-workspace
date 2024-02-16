@@ -6,7 +6,7 @@ const envSchema = z.object({
   VITE_TENDERMINT_RPC: z.string().default('http://localhost:26657'),
   VITE_FAUCET_ENDPOINT: z.string(),
   VITE_EXPLORER_ENDPOINT: z.string(),
-  VITE_TRANSFER_AMOUNT: z.coerce.number().default(10000),
+  VITE_TRANSFER_AMOUNT: z.coerce.number().default(100_000),
 });
 
 export const {
